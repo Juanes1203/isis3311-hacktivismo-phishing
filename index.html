@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un correo basta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Mismo mundo visual del Figma: negro, crema y amarillo. Escenario fijo 1600x900 escalado a la ventana. */
+:root{
+  --ink:#121212;
+  --ink-2:#1d1d1d;
+  --paper:#f1ece0;
+  --yellow:#ffe04b;
+  --red:#d9452b;
+  --mute:#8c877c;
+  --line:#3a3a3a;
+  --display:"Anton","Impact","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0a0a0a;color:var(--paper);font-family:var(--body);overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+
+#viewport{position:fixed;inset:0;display:grid;place-items:center}
+#stage{width:1600px;height:900px;position:relative;transform-origin:center center;flex:none}
+.slide{position:absolute;inset:0;display:none;overflow:hidden;background:var(--ink);color:var(--paper)}
+.slide.active{display:block}
+.slide.paper{background:var(--paper);color:var(--ink)}
+.slide.yellow{background:var(--yellow);color:var(--ink)}
+.pad{position:absolute;inset:0;padding:72px 88px}
+
+.eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.02em;opacity:.75;margin-bottom:28px}
+.eyebrow b{font-weight:600}
+h1,h2,.big{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.95;letter-spacing:.005em;text-wrap:balance}
+h1{font-size:170px}
+h2{font-size:96px}
+.hl{background:var(--yellow);color:var(--ink);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.lead{font-size:34px;line-height:1.3;font-weight:500;max-width:30ch}
+.small{font-size:22px;line-height:1.45}
+.mono{font-family:var(--mono)}
+.muted{color:var(--mute)}
+.row{display:flex;gap:40px}
+.grid{display:grid;gap:0}
+.tag{display:inline-block;font-family:var(--mono);font-size:18px;padding:4px 10px;border:1.5px solid currentColor;border-radius:4px}
+
+/* ---------- barra inferior ---------- */
+#chrome{position:fixed;left:0;right:0;bottom:0;height:34px;display:flex;align-items:center;gap:16px;padding:0 16px;font-family:var(--mono);font-size:13px;color:#9a958a;background:#0a0a0acc;z-index:20;transition:opacity .3s}
+#chrome.hide{opacity:0}
+#chrome:hover{opacity:1}
+#progress{flex:1;height:4px;background:#2a2a2a;border-radius:2px;overflow:hidden}
+#progress i{display:block;height:100%;background:var(--yellow);width:0;transition:width .3s}
+#chrome button{padding:4px 8px;border-radius:4px;border:1px solid #333}
+#chrome button:hover{border-color:var(--yellow);color:var(--paper)}
+#clock.late{color:var(--red)}
+#clock.ok{color:var(--yellow)}
+
+/* ---------- notas ---------- */
+#notes{position:fixed;left:0;right:0;bottom:34px;max-height:42vh;overflow:auto;background:#151515f2;border-top:2px solid var(--yellow);padding:18px 28px 22px;z-index:19;display:none;font-size:17px;line-height:1.5;backdrop-filter:blur(6px)}
+#notes.open{display:block}
+#notes .who{font-family:var(--mono);font-size:14px;color:var(--yellow);margin-bottom:8px;display:flex;gap:18px;flex-wrap:wrap}
+#notes ul{padding-left:20px;max-width:110ch}
+#notes code{font-family:var(--mono);background:#262626;padding:1px 6px;border-radius:3px;font-size:15px}
+
+/* ---------- vista general ---------- */
+#overview{position:fixed;inset:0;background:#0a0a0af5;z-index:30;display:none;overflow:auto;padding:28px}
+#overview.open{display:block}
+#overview .og{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+#overview button{text-align:left;border:1px solid #333;border-radius:6px;padding:12px;background:#161616}
+#overview button:hover,#overview button.cur{border-color:var(--yellow)}
+#overview .n{font-family:var(--mono);font-size:12px;color:var(--yellow)}
+#overview .t{font-size:15px;margin-top:4px}
+#overview h3{font-family:var(--mono);font-weight:400;color:#9a958a;font-size:13px;margin:4px 0 14px}
+
+/* ---------- 1 portada ---------- */
+.cover .meta{font-family:var(--mono);font-size:22px;line-height:1.6;opacity:.85}
+.cover h1{font-size:200px;line-height:1.02;margin-top:36px}
+.cover .env{position:absolute;right:-40px;top:60px;width:440px;height:320px;border:22px solid var(--yellow)}
+.cover .env:before,.cover .env:after{content:"";position:absolute;top:-10px;width:300px;height:22px;background:var(--yellow)}
+.cover .env:before{left:-40px;transform-origin:left;transform:rotate(36deg)}
+.cover .env:after{right:-40px;transform-origin:right;transform:rotate(-36deg)}
+.cover .sub{position:absolute;left:88px;bottom:72px;font-size:32px;font-weight:500}
+.cover .names{position:absolute;right:88px;bottom:72px;text-align:right;font-family:var(--mono);font-size:20px;line-height:1.6;opacity:.85}
+
+/* ---------- 2 agenda ---------- */
+.agenda .top{position:absolute;left:0;right:0;top:0;height:430px;background:var(--paper);color:var(--ink);padding:72px 88px}
+.agenda .cols{position:absolute;left:0;right:0;bottom:0;height:470px;display:grid;grid-template-columns:3fr 5fr 6fr 4fr 2fr}
+.agenda .col{padding:36px 28px;border-right:2px solid var(--paper)}
+.agenda .col:last-child{border-right:0}
+.agenda .col .n{font-family:var(--display);font-size:150px;line-height:1}
+.agenda .col .u{font-family:var(--mono);font-size:18px;opacity:.7;margin:10px 0 18px}
+.agenda .col .l{font-size:24px;font-weight:600}
+.agenda .col.y{background:var(--yellow);color:var(--ink)}
+
+/* ---------- 3 perfiles ---------- */
+.profiles{display:grid;grid-template-columns:1fr 440px;height:100%}
+.profiles .l{background:var(--paper);color:var(--ink);padding:72px 88px;display:flex;flex-direction:column}
+.profiles .r{padding:56px 0 0}
+.profiles .r .item{padding:18px 40px;border-bottom:1px solid #2c2c2c}
+.profiles .r .item b{font-size:28px;display:block}
+.profiles .r .item span{font-size:19px;opacity:.75}
+.profiles .r .item.on{background:var(--yellow);color:var(--ink)}
+
+/* ---------- 4 tácticas ---------- */
+.tactics{display:grid;grid-template-columns:auto 1fr;gap:34px 90px;align-items:center;margin-top:20px}
+.tactics .w{font-family:var(--display);font-size:150px;line-height:.9;text-transform:uppercase}
+.tactics h4{color:var(--yellow);font-size:34px;margin-bottom:8px}
+.tactics p{font-size:24px;line-height:1.4;max-width:34ch;opacity:.9}
+
+/* ---------- 5 HBGary ---------- */
+.steps5{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:48px;align-items:end}
+.steps5 .s{background:var(--ink);color:var(--paper);padding:26px 22px;border-right:2px solid var(--paper);display:flex;flex-direction:column;gap:12px}
+.steps5 .s .n{font-family:var(--display);font-size:56px;color:var(--yellow);line-height:1}
+.steps5 .s b{font-size:24px;line-height:1.2}
+.steps5 .s span{font-size:18px;line-height:1.4;opacity:.85}
+.steps5 .s.key{background:var(--yellow);color:var(--ink)}
+.steps5 .s.key .n{color:var(--ink)}
+
+/* ---------- 6 estadística ---------- */
+.stat{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:60px;height:640px}
+.stat .num{font-family:var(--display);font-size:380px;line-height:.85}
+.stat .txt{font-size:46px;font-weight:600;line-height:1.15;max-width:14ch}
+.statfoot{position:absolute;left:0;right:0;bottom:0;height:150px;background:var(--ink);color:var(--paper);padding:34px 88px;display:flex;justify-content:space-between;align-items:center}
+.statfoot p{font-size:24px;line-height:1.45}
+
+/* ---------- 7 cadena ---------- */
+.chain{display:grid;grid-template-columns:repeat(5,1fr);margin-top:56px;gap:0}
+.chain .c .arrow{height:110px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:44px;text-transform:uppercase;clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%,12% 50%)}
+.chain .c:first-child .arrow{clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%)}
+.chain .c.y .arrow{background:var(--yellow);color:var(--ink)}
+.chain .c .id{font-family:var(--mono);font-size:20px;margin:26px 0 8px 18px;font-weight:600}
+.chain .c p{font-size:21px;line-height:1.4;margin-left:18px;max-width:15ch}
+
+/* ---------- 8 palancas ---------- */
+.levers{display:grid;grid-template-columns:1fr 560px;height:100%}
+.levers .l{padding:60px 88px}
+.levers .l .w{font-family:var(--display);font-size:104px;line-height:.95;text-transform:uppercase}
+.levers .l .q{font-family:var(--mono);color:var(--yellow);font-size:21px;margin:2px 0 18px}
+.levers .r{background:var(--paper);color:var(--ink);padding:60px 56px;display:flex;flex-direction:column;gap:44px}
+.levers .r b{font-size:30px;line-height:1.2;display:block;margin-bottom:8px}
+.levers .r span{font-size:21px;opacity:.75}
+
+/* ---------- 9 canales ---------- */
+.channels{display:grid;grid-template-columns:600px 1fr;height:100%}
+.channels .l{background:var(--yellow);color:var(--ink);padding:72px 64px;display:flex;flex-direction:column}
+.channels .l .num{font-family:var(--display);font-size:168px;white-space:nowrap;line-height:.9}
+.channels .r{background:var(--paper);color:var(--ink);padding:72px 64px;display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.channels .r h5{font-family:var(--mono);font-weight:400;font-size:18px;opacity:.7;margin-bottom:20px}
+.channels .r .k{margin-bottom:28px}
+.channels .r .k b{font-family:var(--display);font-size:46px;font-weight:400;display:block;line-height:1}
+.channels .r .k span{font-size:19px;opacity:.75}
+.channels .r .m{font-size:28px;font-weight:600;margin-bottom:4px}
+.channels .r .m small{display:block;font-family:var(--mono);font-size:17px;font-weight:400;opacity:.6;margin-bottom:24px}
+
+/* ---------- 10 botín ---------- */
+.loot{margin-top:46px;display:grid;grid-template-columns:auto auto auto auto auto;gap:26px 30px;align-items:center;justify-content:start}
+.loot .lab{grid-column:1/-1;font-family:var(--mono);font-size:20px;opacity:.75;margin-top:16px}
+.loot .lab.y{color:var(--yellow);opacity:1}
+.loot .w{font-family:var(--display);font-size:92px;line-height:1;text-transform:uppercase}
+.loot .ar{font-size:44px;color:var(--yellow)}
+
+/* ---------- 11 simulación ---------- */
+.tape{position:absolute;left:0;right:0;top:60px;height:66px;background:var(--yellow);color:var(--ink);font-family:var(--display);font-size:46px;white-space:nowrap;overflow:hidden;line-height:66px}
+.checks{list-style:none;display:flex;flex-direction:column;gap:22px}
+.checks li{font-size:28px;display:flex;gap:16px;align-items:baseline}
+.checks li:before{content:"✓";color:var(--yellow);font-weight:700}
+
+/* ---------- correo ---------- */
+.mail{background:#fff;color:#1c1c1c;border-radius:10px;box-shadow:0 20px 60px #0004;font-family:var(--body);overflow:hidden;position:relative}
+.mail .subj{font-size:30px;font-weight:600;padding:30px 36px 18px}
+.mail .from{display:flex;gap:16px;align-items:center;padding:0 36px}
+.mail .av{width:52px;height:52px;border-radius:50%;background:#1c1c1c;color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px}
+.mail .from b{font-size:20px}
+.mail .from .addr{font-family:var(--mono);font-size:15px;color:#555}
+.mail .det{margin:10px 36px 0 104px;font-size:15px;color:#555;cursor:pointer;text-decoration:underline dotted}
+.mail .hdrs{margin:8px 36px 0 104px;font-family:var(--mono);font-size:15px;line-height:1.6;background:#f4f4f4;border-radius:6px;padding:10px 14px;display:none}
+.mail .hdrs.open{display:block}
+.mail .body{padding:22px 36px 30px 36px;border-top:1px solid #e6e6e6;margin-top:18px;font-size:21px;line-height:1.55}
+.mail .body p{margin-bottom:14px}
+.mail a.lk{color:#1a56c9;font-family:var(--mono);font-size:19px;text-decoration:underline;cursor:pointer}
+.mail .msig{font-size:15px;color:#666}
+.mail .status{position:absolute;left:0;bottom:0;background:#e9e9e9;border-top-right-radius:6px;font-family:var(--mono);font-size:15px;padding:5px 12px;color:#222;display:none}
+.mail .status.show{display:block}
+
+.hot{position:relative;border-radius:4px;transition:background .2s, box-shadow .2s}
+.hot.on{background:#ffe04b88;box-shadow:0 0 0 3px var(--yellow)}
+.pin{position:absolute;top:-16px;left:-16px;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--yellow);font-family:var(--display);font-size:20px;display:none;place-items:center;border:2px solid var(--yellow);z-index:2}
+.hot.on .pin{display:grid}
+
+.vote{display:flex;gap:18px;align-items:center;margin-top:34px}
+.vote button{border:2px solid var(--ink);border-radius:6px;padding:10px 18px;font-weight:600;font-size:22px}
+.vote button:hover{background:var(--ink);color:var(--paper)}
+.vote .count{font-family:var(--display);font-size:64px;min-width:80px;text-align:center}
+
+/* señales */
+.sigs{display:flex;flex-direction:column;gap:10px}
+.sig{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;text-align:left;padding:12px 14px;border:1.5px solid #3a3a3a;border-radius:8px;background:#181818}
+.sig:hover{border-color:var(--yellow)}
+.sig.on{border-color:var(--yellow);background:#2a2610}
+.sig .n{width:40px;height:40px;border-radius:50%;background:var(--yellow);color:var(--ink);font-family:var(--display);font-size:22px;display:grid;place-items:center}
+.sig b{font-size:22px;display:block}
+.sig span{font-size:17px;opacity:.8;line-height:1.35;display:block;margin-top:2px}
+.sig .k{font-family:var(--mono);font-size:13px;color:var(--yellow);margin-top:4px;display:block;opacity:1}
+
+/* cabeceras */
+.hdrbox{background:#0c0c0c;border:1px solid #2c2c2c;border-radius:8px;padding:26px 28px;font-family:var(--mono);font-size:21px;line-height:1.75;white-space:pre-wrap}
+.hdrbox mark{background:var(--yellow);color:var(--ink);padding:0 4px;border-radius:2px}
+.hdrbox mark.r{background:var(--red);color:#fff}
+.hdrbox .hk{color:#8c877c}
+.hdrbox [data-k]{cursor:pointer;border-radius:3px;transition:outline .15s}
+.hdrbox [data-k].focus{outline:2px solid var(--yellow);outline-offset:3px}
+.explain{display:flex;flex-direction:column;gap:22px}
+.explain .e{padding:16px 20px;border-left:4px solid #3a3a3a;cursor:pointer}
+.explain .e.focus{border-color:var(--yellow);background:#1a1a1a}
+.explain .e b{font-family:var(--mono);color:var(--yellow);font-size:24px;display:block;margin-bottom:6px}
+.explain .e span{font-size:19px;line-height:1.4;opacity:.9}
+
+/* laboratorio SMTP */
+.labgrid{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:22px;height:640px}
+.labgrid .ctrls{display:flex;flex-direction:column;gap:12px}
+.run{display:block;text-align:left;border:2px solid #3a3a3a;border-radius:8px;padding:14px 16px;background:#171717}
+.run:hover{border-color:var(--yellow)}
+.run.cur{border-color:var(--yellow);background:#2a2610}
+.run b{display:block;font-size:20px}
+.run code{font-family:var(--mono);font-size:14px;color:var(--yellow);display:block;margin-top:6px;word-break:break-all}
+.term{background:#050505;border:1px solid #2c2c2c;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.term .bar{height:34px;background:#1b1b1b;display:flex;align-items:center;gap:8px;padding:0 14px;font-family:var(--mono);font-size:13px;color:#888}
+.term .bar i{width:12px;height:12px;border-radius:50%;background:#444;display:block}
+.term pre{flex:1;overflow:auto;padding:16px 20px;font-family:var(--mono);font-size:17px;line-height:1.5;color:#dcdcdc;white-space:pre-wrap}
+.term .S{color:#5fd3e6}.term .C{color:#e07be0}.term .Y{color:var(--yellow);font-weight:600}.term .R{color:#ff6a50;font-weight:600}.term .U{text-decoration:underline;font-weight:600;color:#fff}.term .P{color:#9ad46a}
+.speed{display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:14px;color:#9a958a;margin-top:auto}
+.speed button{border:1px solid #3a3a3a;border-radius:4px;padding:4px 10px}
+.speed button.cur{border-color:var(--yellow);color:var(--paper)}
+
+/* resultados 3 columnas */
+.res3{position:absolute;left:0;right:0;bottom:0;height:520px;display:grid;grid-template-columns:1fr 1fr 1.35fr}
+.res3 > div{padding:40px 40px;display:flex;flex-direction:column;gap:16px}
+.res3 .a{background:var(--ink);color:var(--paper)}
+.res3 .b{background:var(--red);color:#fff}
+.res3 .c{background:var(--yellow);color:var(--ink)}
+.res3 .lab3{font-family:var(--mono);font-size:19px;opacity:.85}
+.res3 .w{font-family:var(--display);font-size:84px;line-height:1}
+.res3 .c .w{font-size:120px}
+.res3 .code{font-family:var(--mono);font-size:26px;font-weight:600}
+.res3 .a .code{color:var(--yellow)}
+.res3 p{font-size:24px;font-weight:600;line-height:1.3;max-width:20ch}
+
+/* enlace */
+.urlrow{font-family:var(--mono);font-size:34px;margin:6px 0 30px}
+.urlrow .blue{color:#1a56c9;text-decoration:underline}
+.bracket{display:inline-block;position:relative;background:var(--yellow);padding:0 4px}
+.lab-domain{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:10px}
+.lab-domain input{width:100%;font-family:var(--mono);font-size:22px;padding:12px 14px;border:2px solid var(--ink);border-radius:6px;background:#fff;color:var(--ink)}
+.dres{font-family:var(--mono);font-size:20px;line-height:1.7;margin-top:10px}
+.dres .bad{background:var(--red);color:#fff;padding:0 6px;border-radius:3px}
+.dres .ok{background:var(--yellow);padding:0 6px;border-radius:3px}
+.homo{position:absolute;left:0;right:0;bottom:0;height:230px;background:var(--ink);color:var(--paper);padding:30px 88px}
+.homo .big2{font-family:var(--mono);font-size:40px;display:flex;gap:28px;align-items:center;margin:14px 0 10px}
+.homo .big2 .ar{color:var(--yellow)}
+
+/* veredicto */
+.verdict{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:40px}
+.verdict > div{padding:34px 32px;min-height:470px}
+.verdict .v{background:var(--yellow);color:var(--ink)}
+.verdict .i{background:var(--paper);color:var(--ink)}
+.verdict .x{background:#232323;color:var(--paper);border:2px solid var(--red)}
+.verdict h4{font-family:var(--display);font-weight:400;font-size:52px;text-transform:uppercase;margin-bottom:6px}
+.verdict .d{font-family:var(--mono);font-size:17px;opacity:.7;margin-bottom:24px}
+.verdict ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+.verdict li{font-size:22px;line-height:1.35;padding-left:22px;position:relative}
+.verdict li:before{content:"—";position:absolute;left:0}
+
+/* daño */
+.harm{display:grid;grid-template-columns:520px 1fr;height:100%}
+.harm .l{padding:72px 88px 72px 88px;display:flex;flex-direction:column}
+.harm .rings{position:relative}
+.ring{position:absolute;border-radius:50%;display:flex;flex-direction:column;align-items:center;text-align:center}
+.ring b{font-family:var(--display);font-weight:400;font-size:40px;text-transform:uppercase}
+.ring span{font-size:19px;max-width:20ch;line-height:1.35}
+
+/* defensas */
+.defs{display:grid;grid-template-columns:repeat(3,1fr);gap:60px;margin-top:20px;position:relative;padding-top:80px}
+.defs:before{content:"";position:absolute;left:-88px;right:-88px;top:38px;height:3px;background:var(--ink)}
+.defs .clic{position:absolute;left:50%;top:0;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;font-family:var(--display);font-size:28px;border:3px solid var(--ink)}
+.defs h5{font-family:var(--mono);font-weight:600;font-size:19px;margin-bottom:18px}
+.defs li{list-style:none;font-size:27px;font-weight:600;margin-bottom:12px}
+.defs .note{font-size:19px;opacity:.7;margin-top:14px;line-height:1.4;min-height:54px}
+.defs .ref{font-family:var(--mono);font-size:16px;margin-top:26px;opacity:.8}
+
+/* cierre */
+.final h2{font-size:140px}
+.checklist{display:flex;gap:16px;flex-wrap:wrap;margin-top:40px}
+.checklist span{font-family:var(--mono);font-size:20px;padding:10px 14px;border:1.5px solid var(--yellow);border-radius:6px;color:var(--yellow)}
+
+/* anexo */
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:26px 50px;margin-top:20px}
+.qa .q{border-top:3px solid currentColor;padding-top:14px}
+.qa .q b{font-size:24px;display:block;margin-bottom:8px;line-height:1.25}
+.qa .q span{font-size:19px;line-height:1.45;opacity:.85}
+.qa .q .who{font-family:var(--mono);font-size:14px;opacity:.65;margin-top:6px;display:block}
+.refs{font-family:var(--mono);font-size:20px;line-height:2;margin-top:10px}
+.refs .new{background:var(--yellow);color:var(--ink);padding:0 6px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 -->
+<section class="slide cover" data-title="Portada" data-who="David" data-sec="15">
+  <div class="pad">
+    <div class="meta">De: Grupo 4<br>Para: ISIS 3311 Ciberseguridad<br>Fecha: 19 de noviembre de 2026</div>
+    <h1>Un correo<br><span class="hl" style="display:inline-block;margin-top:22px;line-height:1">basta</span></h1>
+  </div>
+  <div class="env" aria-hidden="true"></div>
+  <div class="sub">Hacktivismo, ingeniería social y phishing</div>
+  <div class="names">David Elías Forero Cobos<br>Juan Esteban Jiménez Benavides</div>
+  <script type="text/notes">
+  - Abrir con la pregunta: ¿cuántos han abierto hoy un correo sin mirar quién lo envía?
+  - Presentar al equipo y el tema: hacktivismo + ingeniería social.
+  - Promesa: al final van a poder desarmar un correo falso.
+  </script>
+</section>
+
+<!-- 2 -->
+<section class="slide agenda" data-title="Agenda: 20 minutos" data-who="David" data-sec="15">
+  <div class="top">
+    <div class="eyebrow">Asunto: El plan de hoy</div>
+    <h2 style="font-size:140px">20 minutos</h2>
+    <p class="lead" style="margin-top:18px;font-size:30px">Del quién al cómo, y del cómo al qué hacer.</p>
+  </div>
+  <div class="cols">
+    <div class="col"><div class="n">3</div><div class="u">min</div><div class="l">Hacktivista</div></div>
+    <div class="col"><div class="n">5</div><div class="u">min</div><div class="l">Ingeniería social y phishing</div></div>
+    <div class="col y"><div class="n">6</div><div class="u">min</div><div class="l">Demo: desarmar un correo</div></div>
+    <div class="col"><div class="n">4</div><div class="u">min</div><div class="l">Riesgos y defensa</div></div>
+    <div class="col"><div class="n">2</div><div class="u">min</div><div class="l">Preguntas</div></div>
+  </div>
+  <script type="text/notes">
+  - Son las cinco partes que pidió el profesor.
+  - La demo es el bloque más largo porque es lo que más pesa (25 %).
+  - Pasarle la palabra a Juan Esteban.
+  </script>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-title="Mismo delito, otra razón" data-who="Juan Esteban" data-sec="50">
+  <div class="profiles">
+    <div class="l">
+      <div class="eyebrow">Asunto: ¿Quién es el hacktivista?</div>
+      <h2 style="font-size:124px">Mismo delito.<br><span class="hl">Otra razón.</span></h2>
+      <p class="lead" style="margin-top:44px">Usa la intrusión como protesta: el ataque es el mensaje.</p>
+      <p class="small" style="margin-top:auto;opacity:.75">Motivación ideológica. Objetivos simbólicos. Busca atención pública.</p>
+    </div>
+    <div class="r">
+      <div class="eyebrow" style="padding:0 40px;margin-bottom:14px">¿Por qué ataca?</div>
+      <div class="item"><b>White Hat</b><span>con autorización</span></div>
+      <div class="item"><b>Black Hat</b><span>por dinero</span></div>
+      <div class="item"><b>Gray Hat</b><span>sin permiso, sin lucro</span></div>
+      <div class="item on"><b>Hacktivista</b><span>por una causa</span></div>
+      <div class="item"><b>Script Kiddie</b><span>por reconocimiento</span></div>
+      <div class="item"><b>APT</b><span>por una misión estratégica</span></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Hacktivista = hacker + activista. La técnica puede ser la misma de un criminal; cambia el motivo.
+  - Eligen objetivos por lo que representan, no por lo que pagan.
+  - El panel ubica al hacktivista frente a los perfiles de los otros grupos.
+  - Idea clave: la motivación explica a quién atacan, pero no legaliza el ataque.
+  </script>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-title="Silenciar, pintar, exponer" data-who="Juan Esteban" data-sec="40">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Qué hace para ser visto</div>
+    <div class="tactics">
+      <div class="w">Silenciar</div><div><h4>DDoS</h4><p>Tumba el sitio del objetivo para callarlo.</p></div>
+      <div class="w">Pintar</div><div><h4>Defacement</h4><p>Reemplaza la página por su mensaje.</p></div>
+      <div class="w"><span class="hl">Exponer</span></div><div><h4>Hack-and-leak</h4><p>Roba documentos y los publica. Guacamaya, 2022: correos del Comando General de las FF. MM.</p></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - El objetivo es ser visto; por eso escogen tácticas ruidosas.
+  - Caso cercano: Guacamaya (2022), grupo latinoamericano que filtró correos militares de la región.
+  - Ojo si preguntan por el método: la prensa reportó ProxyShell en el caso regional, pero para Colombia no hay confirmación oficial.
+  - Exponer necesita acceso a buzones, y ahí entra el phishing.
+  </script>
+</section>
+
+<!-- 5 -->
+<section class="slide paper" data-title="Anonymous vs. HBGary Federal" data-who="Juan Esteban" data-sec="60">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Un caso real, paso a paso</div>
+    <div style="display:flex;justify-content:space-between;align-items:end;gap:40px">
+      <h2 style="font-size:104px">Anonymous vs.<br>HBGary Federal, 2011</h2>
+      <p class="small" style="max-width:30ch;margin-bottom:10px">El CEO dijo tener identificados a líderes de Anonymous. La respuesta escaló de una web a los buzones.</p>
+    </div>
+    <div class="steps5">
+      <div class="s" style="min-height:200px"><div class="n">1</div><b>Web</b><span>Inyección SQL en el CMS del sitio.</span></div>
+      <div class="s" style="min-height:240px"><div class="n">2</div><b>Claves</b><span>Hashes débiles descifrados.</span></div>
+      <div class="s" style="min-height:280px"><div class="n">3</div><b>Buzones</b><span>La misma clave abría el correo de los directivos.</span></div>
+      <div class="s key" style="min-height:330px"><div class="n">4</div><b>Ingeniería social</b><span>Desde el buzón de Greg Hoglund piden la clave de rootkit.com. El administrador la envía.</span></div>
+      <div class="s" style="min-height:370px"><div class="n">5</div><b>Exponer</b><span>Publican decenas de miles de correos. El CEO renuncia semanas después.</span></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Febrero de 2011. Aaron Barr, CEO de HBGary Federal, dijo tener identificados a líderes de Anonymous; ellos respondieron.
+  - Cada paso da más acceso que el anterior: web, claves, buzones.
+  - Hoglund le dijo a Krebs que lo de rootkit.com fue ingeniería social, no un exploit.
+  - El administrador envió usuario y clave por correo. Señal que pasó por alto: "Greg" no recordaba su propio usuario.
+  - Transición: veamos cómo funciona esa técnica.
+  </script>
+</section>
+
+<!-- 6 -->
+<section class="slide yellow" data-title="62 % elemento humano" data-who="David" data-sec="60">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Por qué importa</div>
+    <div class="stat">
+      <div class="num">62 %</div>
+      <div class="txt">de las brechas involucró el elemento humano.</div>
+    </div>
+  </div>
+  <div class="statfoot">
+    <p>La entrada n.º 1 ya es técnica: explotar fallas, 31 %.<br>Pero la persona sigue presente en la mayoría de los casos.</p>
+    <span class="mono muted" style="font-size:18px">Verizon DBIR 2026</span>
+  </div>
+  <script type="text/notes">
+  - Dato de la DBIR 2026 de Verizon.
+  - Precisión importante: "elemento humano" incluye errores y engaños, no solo phishing.
+  - Si preguntan: la explotación de vulnerabilidades (31 %) ya superó a las credenciales robadas (13 %) como entrada principal.
+  - El punto: parchear software no parchea a la persona.
+  </script>
+</section>
+
+<!-- 7 -->
+<section class="slide paper" data-title="Cadena: abrir la puerta" data-who="David" data-sec="60">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Cómo funciona</div>
+    <div style="display:flex;justify-content:space-between;gap:40px">
+      <h2 style="font-size:100px">Hacer que la víctima<br>abra la puerta</h2>
+      <p class="small" style="max-width:26ch;font-size:24px">Ingeniería social: manipular a una persona para que actúe contra su propia seguridad.</p>
+    </div>
+    <div class="chain">
+      <div class="c"><div class="arrow">Investigar</div><div class="id">T1589</div><p>Nombres, cargos y rutinas en fuentes abiertas.</p></div>
+      <div class="c"><div class="arrow">Preparar</div><div class="id">T1583.001</div><p>Dominio y pretexto creíbles.</p></div>
+      <div class="c"><div class="arrow">Entregar</div><div class="id">T1566</div><p>Correo, SMS, voz o chat.</p></div>
+      <div class="c y"><div class="arrow">Engañar</div><div class="id">T1204</div><p>La víctima hace clic o entrega datos.</p></div>
+      <div class="c"><div class="arrow">Entrar</div><div class="id">T1078</div><p>Ya usa una cuenta válida.</p></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Ingeniería social: manipular para que la persona haga algo contra su seguridad. Phishing es una de sus formas.
+  - La cadena viene con identificadores de MITRE ATT&CK, el marco del curso.
+  - El paso amarillo es donde el ataque depende de una decisión humana.
+  - Después de ese paso, el atacante ya no parece atacante: usa una cuenta válida. Por eso es difícil de detectar.
+  </script>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-title="Palancas y protocolo" data-who="David" data-sec="60">
+  <div class="levers">
+    <div class="l">
+      <div class="eyebrow">Asunto: Qué vulnerabilidad aprovecha · En la persona</div>
+      <div class="w">Autoridad</div><div class="q">"Lo solicita Rectoría."</div>
+      <div class="w">Urgencia</div><div class="q">"Antes de las 5:00 p. m."</div>
+      <div class="w">Miedo</div><div class="q">"Perderá su cuenta."</div>
+      <div class="w">Confianza</div><div class="q">"Somos su equipo de TI."</div>
+    </div>
+    <div class="r">
+      <div class="eyebrow" style="margin:0">En el protocolo</div>
+      <div><b>SMTP no verifica el remitente visible.</b><span>El From lo escribe quien envía.</span></div>
+      <div><b>El texto de un enlace no es su destino.</b><span>Lo que se lee y a donde va son datos distintos.</span></div>
+      <div><b>Un dominio parecido es un dominio válido.</b><span>Registrarlo cuesta poco.</span></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - A la izquierda, palancas psicológicas. Los correos combinan varias para que la persona actúe antes de pensar.
+  - A la derecha, el problema técnico: SMTP nació sin autenticar al remitente. El campo From lo escribe quien envía.
+  - SPF, DKIM y DMARC se agregaron después para compensar. Los vemos en la demo.
+  </script>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-title="+40 % por SMS y voz" data-who="David" data-sec="60">
+  <div class="channels">
+    <div class="l">
+      <div class="eyebrow">Asunto: Por dónde llega</div>
+      <div class="num">+40 %</div>
+      <p style="font-size:34px;font-weight:600;line-height:1.2;margin-top:24px;max-width:16ch">más clics por SMS y voz que por correo tradicional.</p>
+      <p class="mono" style="font-size:16px;margin-top:auto;line-height:1.5">Verizon DBIR 2026 · en simulaciones de phishing<br>(mediana ≈ 2 % frente a ≈ 1,4 %)</p>
+    </div>
+    <div class="r">
+      <div>
+        <h5>Según a quién apunta</h5>
+        <div class="k"><b>Masivo</b><span>Miles de personas, mensaje genérico.</span></div>
+        <div class="k"><b>Spear phishing</b><span>Una persona, con contexto real.</span></div>
+        <div class="k"><b>Whaling</b><span>Directivos y altos cargos.</span></div>
+      </div>
+      <div style="border-left:2px solid var(--ink);padding-left:40px">
+        <h5>Según el medio</h5>
+        <div class="m">Adjunto<small>T1566.001</small></div>
+        <div class="m">Enlace<small>T1566.002</small></div>
+        <div class="m">Servicio o chat<small>T1566.003</small></div>
+        <div class="m">Voz<small>T1566.004</small></div>
+      </div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - A mayor contexto sobre la víctima, más creíble el engaño y menos alcance.
+  - ATT&CK clasifica T1566 por medio: adjunto, enlace, servicio y voz.
+  - Smishing es por SMS y quishing por código QR.
+  - DBIR 2026: en <b>simulaciones</b>, los mensajes de texto y llamadas falsas logran ~40 % más clics que el correo (mediana ≈ 2 % vs ≈ 1,4 %). No es una cifra de ataques reales: decirlo si preguntan.
+  - Consecuencia: mirar solo el correo se queda corto.
+  </script>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-title="Mismo correo, otro botín" data-who="David" data-sec="60">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Por qué un hacktivista haría phishing</div>
+    <h2 style="font-size:116px">Mismo correo. Otro botín.</h2>
+    <div class="loot">
+      <div class="lab">Criminal financiero</div>
+      <div class="w">Credencial</div><div class="ar">→</div><div class="w">Dinero</div><div class="ar">→</div><div class="w">Silencio</div>
+      <div class="lab y">Hacktivista</div>
+      <div class="w">Credencial</div><div class="ar">→</div><div class="w">Documentos</div><div class="ar">→</div><div class="w"><span class="hl">Titular</span></div>
+    </div>
+    <p class="lead" style="margin-top:50px;font-size:28px;max-width:none">Su botín es lo que se pueda publicar: buzones de directivos y funcionarios.</p>
+  </div>
+  <script type="text/notes">
+  - Aquí se juntan los dos temas que nos asignaron.
+  - El criminal financiero quiere pasar desapercibido el mayor tiempo posible.
+  - El hacktivista necesita lo contrario: que se sepa.
+  - Por eso su objetivo natural son buzones con documentos que se puedan publicar.
+  - Transición a la demo: vamos a ponernos en ese escenario.
+  </script>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-title="Demo · Todo es ficticio" data-who="Juan Esteban" data-sec="30" data-check="8">
+  <div class="tape" aria-hidden="true">SIMULACIÓN · SIMULACIÓN · SIMULACIÓN · SIMULACIÓN · SIMULACIÓN · SIMULACIÓN · SIMULACIÓN · SIMULACIÓN · SIMULACIÓN</div>
+  <div class="pad" style="top:126px">
+    <h2 style="font-size:130px;margin-top:20px">Todo es ficticio</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:50px">
+      <div>
+        <div class="eyebrow" style="color:var(--yellow);opacity:1">Escenario</div>
+        <p class="lead" style="font-size:36px">El Colectivo Aguacero quiere el buzón de Rectoría de la Universidad Alto Verde.</p>
+      </div>
+      <div>
+        <div class="eyebrow" style="color:var(--yellow);opacity:1">Controles del laboratorio</div>
+        <ul class="checks">
+          <li>Organización inventada</li>
+          <li>Dominios .example, reservados (RFC 2606)</li>
+          <li>Ningún envío real: solo 127.0.0.1</li>
+          <li>Ninguna credencial capturada</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - El profesor exige entorno controlado. Decirlo explícitamente: vale nota.
+  - .example es un dominio reservado: no existe en Internet y no le llega a nadie.
+  - Colectivo Aguacero y Universidad Alto Verde son inventados.
+  - Escenario: el colectivo quiere documentos internos y apunta a la cuenta de Rectoría.
+  - <b>Punto de control: al empezar esta parte deben ir en el minuto 8.</b>
+  </script>
+</section>
+
+<!-- 12 -->
+<section class="slide paper" data-title="Demo 1 · ¿Le darían clic?" data-who="Juan Esteban" data-sec="45">
+  <div style="display:grid;grid-template-columns:520px 1fr;height:100%">
+    <div style="padding:72px 0 72px 88px;display:flex;flex-direction:column">
+      <div class="eyebrow">Demo 1 de 5</div>
+      <h2 style="font-size:150px">¿Le<br>darían<br>clic?</h2>
+      <p class="small" style="margin-top:28px;font-size:26px">Tienen 20 segundos.</p>
+      <div class="vote" aria-label="Conteo de manos">
+        <button data-vote="-1" aria-label="Restar una mano">−</button>
+        <div class="count" id="votes">0</div>
+        <button data-vote="1" aria-label="Sumar una mano">+</button>
+        <span class="mono" style="font-size:16px;opacity:.7">manos<br>arriba</span>
+      </div>
+    </div>
+    <div style="padding:72px 88px 72px 40px;display:flex;align-items:center">
+      <div class="mail" style="width:100%" data-mail="1"></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - No decir nada durante unos segundos. Dejar que lo lean.
+  - Preguntar: levante la mano quien le daría clic. Contar con + / − en pantalla.
+  - Preguntar a alguien que no lo haría: ¿qué le hizo dudar?
+  - Llevar las respuestas a la siguiente diapositiva.
+  </script>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-title="Demo 2 · Cinco señales" data-who="Juan Esteban" data-sec="60">
+  <div class="pad" style="padding-top:56px">
+    <div class="eyebrow">Demo 2 de 5 · Lo que se ve sin herramientas</div>
+    <div style="display:grid;grid-template-columns:1fr 520px;gap:40px;margin-top:6px">
+      <div class="mail" data-mail="2" style="align-self:start;margin-top:14px"></div>
+      <div>
+        <h2 style="font-size:64px;margin-bottom:18px">Cinco señales</h2>
+        <div class="sigs" id="sigs"></div>
+        <p class="mono muted" style="font-size:14px;margin-top:12px">Clic en cada señal o teclas 1–5 · 0 muestra todas</p>
+      </div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Recorrer en orden 1 a 5, conectando con lo que dijo el público. Teclas 1–5 resaltan cada señal.
+  - 1, 3 y 4 son la parte humana: autoridad, urgencia y miedo.
+  - 2 no se ve hasta abrir los detalles: una respuesta iría a un dominio distinto.
+  - 5 parece legítimo; vamos a comprobarlo.
+  - Advertencia: el remitente visible es idéntico al real. Mirar la dirección no alcanza.
+  </script>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-title="Demo 3 · Cabeceras" data-who="David" data-sec="60">
+  <div class="pad" style="padding-top:56px">
+    <div class="eyebrow">Demo 3 de 5 · Cabeceras del mensaje</div>
+    <h2 style="font-size:84px">El From dice una cosa.<br>El sobre, otra.</h2>
+    <div style="display:grid;grid-template-columns:1fr 440px;gap:40px;margin-top:30px">
+<div class="hdrbox" id="hdrbox"><span class="hk">Received:</span> from relay.correo-masivo.example
+    ([198.51.100.23])
+<span class="hk">Return-Path:</span> &lt;rebote@<mark data-k="spf">correo-masivo.example</mark>&gt;
+<span class="hk">From:</span> "Mesa de Servicios TI" &lt;soporte@<mark data-k="dmarc">altoverde.example</mark>&gt;
+<span class="hk">Reply-To:</span> &lt;soporte@<mark data-k="reply">altoverde-ayuda.example</mark>&gt;
+<span class="hk">Authentication-Results:</span> mx.altoverde.example;
+  <mark data-k="spf">spf=pass</mark> smtp.mailfrom=correo-masivo.example;
+  <mark data-k="dkim">dkim=none</mark>;
+  <mark class="r" data-k="dmarc">dmarc=fail</mark> (<mark data-k="p">p=none</mark>) header.from=altoverde.example</div>
+      <div class="explain" id="explain">
+        <div class="e" data-k="spf"><b>spf=pass</b><span>Solo avala a correo-masivo, no a Alto Verde.</span></div>
+        <div class="e" data-k="dkim"><b>dkim=none</b><span>Nadie firmó el mensaje.</span></div>
+        <div class="e" data-k="dmarc"><b>dmarc=fail</b><span>El From no se alinea con SPF ni con DKIM.</span></div>
+        <div class="e" data-k="p"><b>p=none</b><span>La política solo observa. Por eso llegó.</span></div>
+      </div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Aquí está el contenido técnico. Ir lento. Pasar el cursor por cada explicación para resaltarla en las cabeceras.
+  - From es lo que ve el usuario. Return-Path es el sobre, el que usa SMTP.
+  - SPF pasa, pero solo para correo-masivo.example.
+  - DKIM: nadie firmó el mensaje.
+  - DMARC exige que SPF o DKIM pasen alineados con el From. Ninguno lo hace.
+  - p=none significa monitorear, no bloquear. Con p=reject este correo no habría llegado: lo probamos en la siguiente.
+  - 198.51.100.23 es una IP reservada para documentación.
+  </script>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-title="Demo 4 · Laboratorio SMTP" data-who="David, en la terminal" data-sec="90">
+  <div class="pad" style="padding-top:50px">
+    <div class="eyebrow">Demo 4 de 5 · En vivo en 127.0.0.1 · Respaldo en el navegador</div>
+    <h2 style="font-size:76px">Cambiemos una pieza</h2>
+    <div class="labgrid">
+      <div class="ctrls" id="runs"></div>
+      <div class="term" aria-live="polite">
+        <div class="bar"><i></i><i></i><i></i><span style="margin-left:10px">~/PRESENTACION — zsh</span></div>
+        <pre id="term"></pre>
+      </div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Aclarar: receptor SMTP local, DNS simulado y sin firma DKIM. Modelo simplificado; nada sale de este computador.
+  - En vivo, en la terminal: <code>python3 demo.py enviar suplantacion --politica none</code>. Señalar que MAIL FROM y From son distintos, y que el servidor acepta.
+  - <code>python3 demo.py enviar suplantacion --politica reject</code>. Señalar el 550: cambió una sola línea de política.
+  - <code>python3 demo.py enviar parecido</code>
+  - <code>python3 demo.py analizar</code>
+  - Idea clave: DMARC prueba que el dominio autorizó el mensaje, no que ese dominio sea confiable.
+  - <b>Si la terminal falla:</b> usar los botones de esta diapositiva. Es el mismo modelo, traducido a JavaScript, con la misma salida. La siguiente resume los tres resultados.
+  </script>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-title="Demo 4 · Resultados" data-who="David" data-sec="0">
+  <div class="pad" style="background:var(--paper);color:var(--ink);height:380px;bottom:auto">
+    <div class="eyebrow">Demo 4 de 5 · Resumen</div>
+    <h2 style="font-size:100px">Cambiemos una pieza</h2>
+    <p class="small" style="margin-top:14px">Receptor SMTP local. DNS simulado y sin firma DKIM: es un modelo simplificado.</p>
+  </div>
+  <div class="res3">
+    <div class="a"><div class="lab3">From falso, p=none</div><div class="w">Entregado</div><div class="code">dmarc=fail</div><p>La política solo observa.</p></div>
+    <div class="b"><div class="lab3">From falso, p=reject</div><div class="w">Rechazado</div><div class="code">550 5.7.1</div><p>Cierra la suplantación exacta.</p></div>
+    <div class="c"><div class="lab3">Dominio parecido</div><div class="w">Entregado</div><div class="code">dmarc=pass</div><p>Pasa la autenticación y sigue siendo phishing.</p></div>
+  </div>
+  <script type="text/notes">
+  - Diapositiva de respaldo/resumen de la demo (el tiempo ya está contado en la anterior).
+  - Si la terminal falló, quedarse aquí: muestra los mismos tres resultados.
+  </script>
+</section>
+
+<!-- 17 -->
+<section class="slide paper" data-title="Demo 5 · El enlace" data-who="Juan Esteban" data-sec="45">
+  <div class="pad" style="padding-top:56px">
+    <div class="eyebrow">Demo 5 de 5 · El enlace</div>
+    <h2 style="font-size:78px">Lee el dominio de derecha a izquierda</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:24px">
+      <div>
+        <div class="mono" style="font-size:17px;opacity:.7">Lo que se ve</div>
+        <div class="urlrow" style="font-size:26px"><span class="blue">https://portal.altoverde.example/verificar</span></div>
+        <div class="mono" style="font-size:17px;opacity:.7">Adónde va</div>
+        <div class="urlrow" style="font-size:26px">https://altoverde.example.<span class="bracket">portal-verificar.example</span>/login</div>
+        <p class="small" style="font-weight:600">El dominio real es el que va justo antes de la primera barra. Lo demás a la izquierda lo decide el atacante.</p>
+      </div>
+      <div>
+        <label class="mono" for="urlin" style="font-size:17px;opacity:.7">Pruébalo con cualquier enlace</label>
+        <input id="urlin" value="https://altoverde.example.portal-verificar.example/login" spellcheck="false" autocomplete="off">
+        <div class="dres" id="dres"></div>
+      </div>
+    </div>
+  </div>
+  <div class="homo">
+    <div class="mono" style="font-size:17px;color:var(--yellow)">Otra trampa: letras de otro alfabeto</div>
+    <div class="big2"><span id="homo-a">аltoverde.example</span><span class="ar">→</span><span id="homo-b"></span></div>
+    <div class="mono" style="font-size:17px;opacity:.7">La primera "a" es cirílica (U+0430). Se ve igual; en DNS es otro dominio.</div>
+  </div>
+  <script type="text/notes">
+  - <b>Ahora habla Juan Esteban</b> (así los dos muestran parte técnica).
+  - El texto azul lo escribe el atacante. El destino real está en el href.
+  - En un correo real: pasar el cursor sin hacer clic, o inspeccionar el HTML.
+  - Regla: buscar el dominio registrado, justo antes de la barra. altoverde.example al inicio es solo un subdominio decorativo.
+  - Pedir al público un enlace y escribirlo en la caja (o probar <code>https://www.uniandes.edu.co.login-seguro.com/</code>).
+  - Abajo: homógrafo. Se ve igual, pero la primera letra es cirílica. El navegador puede mostrar la forma xn--; eso delata el truco.
+  - En vivo opcional: <code>python3 demo.py dominio</code>
+  </script>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-title="Probado vs. supuesto" data-who="David" data-sec="30" data-check="14">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Qué demuestra el correo</div>
+    <h2 style="font-size:100px">Separar lo probado de lo supuesto</h2>
+    <div class="verdict">
+      <div class="v"><h4>Verificado</h4><div class="d">Evidencia técnica</div><ul>
+        <li>El From no está autenticado: DMARC falla.</li>
+        <li>Las respuestas irían a altoverde-ayuda.example.</li>
+        <li>El enlace lleva a portal-verificar.example.</li></ul></div>
+      <div class="i"><h4>Indicio</h4><div class="d">Un correo legítimo también puede tenerlo</div><ul>
+        <li>Urgencia en el asunto.</li>
+        <li>Saludo genérico.</li>
+        <li>Amenaza con plazo.</li></ul></div>
+      <div class="x"><h4>No demostrado</h4><div class="d">Atribución</div><ul>
+        <li>Quién lo envió. El correo prueba el engaño, no al autor.</li>
+        <li>Un nombre de colectivo en el texto se puede falsificar.</li></ul></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Separar lo que probamos de lo que suponemos.
+  - Las señales técnicas son evidencia. Las de redacción son indicios: un correo legítimo también puede ser urgente.
+  - La atribución no sale del correo: el nombre del grupo se puede falsificar.
+  - <b>Punto de control: aquí deben ir máximo en el minuto 14.</b>
+  </script>
+</section>
+
+<!-- 19 -->
+<section class="slide paper" data-title="El daño se expande" data-who="Juan Esteban" data-sec="90">
+  <div class="harm">
+    <div class="l">
+      <div class="eyebrow">Asunto: Riesgos y consecuencias</div>
+      <h2 style="font-size:104px">El daño<br>se expande</h2>
+      <p style="font-size:30px;font-weight:600;margin-top:auto">La ley no pregunta por la causa.</p>
+      <p class="mono" style="font-size:18px;line-height:1.7;margin-top:14px;opacity:.8">Ley 1273 de 2009<br>269A: acceso abusivo<br>269G: suplantar sitios<br>48 a 96 meses de prisión</p>
+    </div>
+    <div class="rings">
+      <div class="ring" style="width:860px;height:860px;left:40px;top:20px;background:#ddd6c6;justify-content:center;align-items:flex-start;padding-left:30px">
+        <div style="max-width:180px"><b>Terceros</b><br><span>Datos de gente ajena a la causa.</span></div>
+      </div>
+      <div class="ring" style="width:640px;height:640px;left:240px;top:130px;background:var(--ink);color:var(--paper);padding-top:50px">
+        <b>Organización</b><span>Movimiento lateral, filtración y reputación.</span>
+      </div>
+      <div class="ring" style="width:330px;height:330px;left:395px;top:330px;background:var(--yellow);color:var(--ink);justify-content:center">
+        <b>Cuenta</b><span>Correo leído y claves reiniciadas.</span>
+      </div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - El daño crece hacia afuera: una cuenta abre otras.
+  - Con el buzón se pueden reiniciar claves de otros servicios, como en HBGary.
+  - Riesgo propio del hacktivismo: las filtraciones también exponen a personas que nada tienen que ver con la causa.
+  - Ley 1273 de 2009: el acceso abusivo es el art. 269A; el 269G castiga la suplantación de sitios para capturar datos.
+  - La norma describe la conducta; la motivación política no aparece como excepción.
+  </script>
+</section>
+
+<!-- 20 -->
+<section class="slide paper" data-title="Tres momentos para cortarlo" data-who="Juan Esteban" data-sec="120">
+  <div class="pad">
+    <div class="eyebrow">Asunto: Prevención y detección</div>
+    <h2 style="font-size:96px">Tres momentos para cortarlo</h2>
+    <div class="defs">
+      <div class="clic">Clic</div>
+      <div><h5>Antes del clic</h5><ul><li>DMARC en p=reject</li><li>SPF y DKIM alineados</li><li>Filtro y simulacros</li></ul><p class="note">Bloquea la entrega.</p><div class="ref">CIS 9 y 14 · ISO 6.3</div></div>
+      <div><h5>En el clic</h5><ul><li>MFA con FIDO2 o passkeys</li><li>Filtrado web</li></ul><p class="note">Un código MFA no frena el robo de sesión con AiTM.</p><div class="ref">ISO 8.23</div></div>
+      <div><h5>Después del clic</h5><ul><li>Botón de reportar</li><li>Revocar sesiones</li><li>Alertar reglas de reenvío</li></ul><p class="note">Reduce el tiempo de exposición.</p><div class="ref">ISO 6.8</div></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - Ninguna capa alcanza sola; se asume que alguna va a fallar.
+  - Antes: DMARC en p=reject cierra la suplantación exacta del dominio.
+  - En el clic: un proxy AiTM captura la cookie de sesión aunque el usuario pase el MFA por código.
+  - FIDO2 y passkeys atan la credencial al dominio real; en el dominio falso no funcionan.
+  - Después: que reportar sea fácil, y responder rápido.
+  - Marcos: ISO 27002 (6.3, 6.8, 8.23), CIS Controls 9 y 14, ATT&CK M1017 y M1054.
+  </script>
+</section>
+
+<!-- 21 -->
+<section class="slide final" data-title="Cierre y preguntas" data-who="Los dos" data-sec="30">
+  <div class="pad">
+    <h2>Un correo no prueba<br>quién lo envió.</h2>
+    <p style="margin-top:30px"><span class="hl" style="font-size:30px;font-weight:600;padding:4px 12px">¿Pedido urgente? Verifica por otro canal.</span></p>
+    <div class="checklist">
+      <span>1 · ¿Quién lo pide y por qué tan rápido?</span>
+      <span>2 · Pasa el cursor: ¿a qué dominio va?</span>
+      <span>3 · ¿A dónde irían mis respuestas?</span>
+      <span>4 · Confirma por otro canal</span>
+      <span>5 · Reporta, aunque ya hayas hecho clic</span>
+    </div>
+    <h2 style="font-size:150px;margin-top:60px">¿Preguntas?</h2>
+  </div>
+  <div class="env" aria-hidden="true" style="position:absolute;right:-40px;bottom:-60px;width:460px;height:320px;border:20px solid var(--yellow)"></div>
+  <script type="text/notes">
+  - Idea final: la técnica no tiene ideología; la defensa tampoco.
+  - Regla práctica: pedido urgente = verificar por otro canal.
+  - La lista de cinco preguntas es para llevarse; no leerla toda, solo señalarla.
+  - Invitar a preguntas. Las respuestas preparadas están en el anexo (tecla G para saltar).
+  </script>
+</section>
+
+<!-- 22 Anexo -->
+<section class="slide paper" data-title="Anexo · Preguntas (1/2)" data-who="Anexo" data-sec="0">
+  <div class="pad">
+    <div class="eyebrow">Anexo · Solo si preguntan</div>
+    <h2 style="font-size:76px">Preguntas probables</h2>
+    <div class="qa">
+      <div class="q"><b>¿Por qué el correo no menciona ninguna causa?</b><span>Porque el señuelo se disfraza de algo rutinario. La causa aparece después, en la filtración o el comunicado.</span><span class="who">Responde: Juan Esteban</span></div>
+      <div class="q"><b>¿DMARC en p=reject no basta?</b><span>Cierra la suplantación exacta. El dominio parecido pasa DMARC porque el atacante sí lo controla (Demo 4).</span><span class="who">Responde: David</span></div>
+      <div class="q"><b>¿Cómo roban la cuenta si hay MFA?</b><span>Un proxy AiTM se pone entre la víctima y el sitio real y copia la cookie de sesión. FIDO2 y passkeys lo evitan porque la firma depende del dominio.</span><span class="who">Responde: Juan Esteban</span></div>
+      <div class="q"><b>¿Qué hace p=quarantine?</b><span>El receptor manda el correo a spam en vez de rechazarlo. Es el paso intermedio entre none y reject.</span><span class="who">Responde: David</span></div>
+      <div class="q"><b>¿Qué es la alineación relajada?</b><span>Compara el dominio organizacional (mail.altoverde.example ≈ altoverde.example). La estricta exige el nombre exacto.</span><span class="who">Responde: David</span></div>
+      <div class="q"><b>¿Guacamaya usó phishing?</b><span>No está confirmado para Colombia. La prensa reportó ProxyShell (Exchange) en el caso regional. Lo usamos como ejemplo de hack-and-leak, no de phishing.</span><span class="who">Responde: Juan Esteban</span></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - No presentar. Saltar aquí con G si hacen alguna de estas preguntas.
+  </script>
+</section>
+
+<!-- 23 -->
+<section class="slide paper" data-title="Anexo · Preguntas (2/2)" data-who="Anexo" data-sec="0">
+  <div class="pad">
+    <div class="eyebrow">Anexo · Solo si preguntan</div>
+    <h2 style="font-size:76px">Más preguntas</h2>
+    <div class="qa">
+      <div class="q"><b>¿Qué cambió en DMARC este año?</b><span>En mayo de 2026 el IETF publicó DMARCbis (RFC 9989, 9990 y 9991), que reemplaza al RFC 7489. El registro sigue siendo v=DMARC1; desaparece pct y se agrega np para subdominios inexistentes.</span><span class="who">Responde: David</span></div>
+      <div class="q"><b>¿El +40 % es de ataques reales?</b><span>No. Sale de simulaciones de phishing: mediana de clics ≈ 2 % por SMS o voz frente a ≈ 1,4 % por correo.</span><span class="who">Responde: Juan Esteban</span></div>
+      <div class="q"><b>¿Por qué SPF pasa si el correo es falso?</b><span>SPF valida el sobre (Return-Path), no el From visible. El atacante usa un sobre propio que sí está autorizado.</span><span class="who">Responde: Juan Esteban</span></div>
+      <div class="q"><b>¿Es delito si la causa es justa?</b><span>Ley 1273: los artículos 269A y 269G describen la conducta. La motivación política no aparece como excepción.</span><span class="who">Responde: Juan Esteban</span></div>
+      <div class="q"><b>¿Qué hago si ya hice clic?</b><span>Reportar de inmediato, cambiar la clave, cerrar sesiones activas y revisar reglas de reenvío del buzón.</span><span class="who">Responde: David</span></div>
+      <div class="q"><b>¿La demo es una implementación real?</b><span>No: el DNS es una tabla y no hay firma DKIM. Modela la lógica de SPF y DMARC para mostrar la decisión del receptor.</span><span class="who">Responde: David</span></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - No presentar. Respaldo para preguntas.
+  </script>
+</section>
+
+<!-- 24 -->
+<section class="slide" data-title="Anexo · Fuentes" data-who="Anexo" data-sec="0">
+  <div class="pad">
+    <div class="eyebrow">Fuentes</div>
+    <h2 style="font-size:96px">De dónde sale</h2>
+    <div class="refs">
+      Verizon (2026). Data Breach Investigations Report.<br>
+      Krebs, B. (2011). HBGary Federal hacked by Anonymous.<br>
+      Anderson, N. (2011). How one man tracked down Anonymous, and paid a heavy price. Ars Technica.<br>
+      The Record (2022). Guacamaya hack targeting regional militaries.<br>
+      Microsoft (2022). From cookie theft to BEC (AiTM).<br>
+      MITRE ATT&amp;CK: T1566, T1589, T1583.001, T1204, T1078 · M1017, M1054.<br>
+      IETF: <span class="new">RFC 9989 (DMARC, reemplaza al 7489)</span>, 7208 (SPF), 6376 (DKIM), 2606.<br>
+      Colombia: Ley 1273 de 2009, arts. 269A y 269G.<br>
+      ISO/IEC 27002:2022 y CIS Controls v8.
+    </div>
+  </div>
+  <script type="text/notes">
+  - No presentar. Queda como referencia si piden las fuentes.
+  </script>
+</section>
+
+</div></div>
+
+<div id="notes" role="region" aria-label="Notas del presentador"></div>
+<div id="overview" role="dialog" aria-label="Vista general"><h3>Vista general · Esc para cerrar</h3><div class="og" id="og"></div></div>
+<div id="chrome">
+  <span id="num">1 / 24</span>
+  <div id="progress"><i></i></div>
+  <span id="clock" title="Cronómetro (T para iniciar/pausar, R para reiniciar)">00:00</span>
+  <button id="b-notes" title="Notas (N)">Notas</button>
+  <button id="b-grid" title="Vista general (G)">Índice</button>
+  <button id="b-full" title="Pantalla completa (F)">Pantalla completa</button>
+</div>
+
+<script>
+(function(){
+"use strict";
+const slides=[...document.querySelectorAll(".slide")];
+const stage=document.getElementById("stage");
+let cur=0;
+
+/* ---------- escala ---------- */
+function fit(){const s=Math.min(innerWidth/1600,(innerHeight)/900);stage.style.transform="scale("+s+")";}
+addEventListener("resize",fit);fit();
+
+/* ---------- notas y tiempos ---------- */
+const plan=[];let acc=0;
+slides.forEach((s,i)=>{const sec=+s.dataset.sec||0;plan.push({start:acc,sec});acc+=sec;});
+const total=acc;
+function mmss(t){t=Math.max(0,Math.round(t));return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");}
+function notesHtml(i){
+  const s=slides[i];const n=s.querySelector('script[type="text/notes"]');
+  const items=n?n.textContent.trim().split("\n").map(l=>l.trim().replace(/^- /,"")).filter(Boolean):[];
+  const p=plan[i];const sec=+s.dataset.sec||0;
+  const when=sec?("de "+mmss(p.start)+" a "+mmss(p.start+sec)):"sin tiempo asignado";
+  return '<div class="who"><span>Habla: '+(s.dataset.who||"—")+'</span><span>'+(sec?mmss(sec):"")+'</span><span>'+when+' de '+mmss(total)+'</span>'+(s.dataset.check?'<span>Control: minuto '+s.dataset.check+'</span>':'')+'</div><ul>'+items.map(t=>"<li>"+t+"</li>").join("")+"</ul>";
+}
+
+/* ---------- navegación ---------- */
+const numEl=document.getElementById("num"),bar=document.querySelector("#progress i"),notes=document.getElementById("notes");
+function go(i,fromHash){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  slides[cur].classList.remove("active");cur=i;slides[cur].classList.add("active");
+  numEl.textContent=(cur+1)+" / "+slides.length;
+  bar.style.width=((cur)/(slides.length-1)*100)+"%";
+  notes.innerHTML=notesHtml(cur);
+  if(!fromHash){try{history.replaceState(null,"","#s"+(cur+1));}catch(e){location.hash="s"+(cur+1);}}
+  document.querySelectorAll("#og button").forEach((b,k)=>b.classList.toggle("cur",k===cur));
+  if(!running && cur>0 && startAt===null) startTimer();
+  tick();
+}
+function fromHash(){const m=/^#s(\d+)$/.exec(location.hash);return m?(+m[1]-1):0;}
+addEventListener("hashchange",()=>go(fromHash(),true));
+
+/* vista general */
+const og=document.getElementById("og"),ov=document.getElementById("overview");
+slides.forEach((s,i)=>{const b=document.createElement("button");b.innerHTML='<div class="n">'+String(i+1).padStart(2,"0")+" · "+(s.dataset.who||"")+'</div><div class="t">'+s.dataset.title+"</div>";b.onclick=()=>{go(i);ov.classList.remove("open");};og.appendChild(b);});
+
+/* cronómetro */
+let startAt=null,elapsed=0,running=false;const clock=document.getElementById("clock");
+function startTimer(){startAt=Date.now();running=true;}
+function toggleTimer(){if(running){elapsed+=Date.now()-startAt;running=false;}else{startAt=Date.now();running=true;}}
+function now(){return (elapsed+(running?Date.now()-startAt:0))/1000;}
+function tick(){
+  const t=now();clock.textContent=mmss(t)+(running?"":" ⏸");
+  const target=plan[cur].start+(+slides[cur].dataset.sec||0);
+  clock.className=(t===0)?"":(t>target+20?"late":"ok");
+  clock.title="Debería terminar esta diapositiva en "+mmss(target)+" · T inicia/pausa · R reinicia";
+}
+setInterval(tick,1000);
+
+/* teclado */
+addEventListener("keydown",e=>{
+  if(e.target.matches("input,textarea"))return;
+  const k=e.key;
+  if(["ArrowRight","PageDown"," ","Enter"].includes(k)){e.preventDefault();go(cur+1);}
+  else if(["ArrowLeft","PageUp","Backspace"].includes(k)){e.preventDefault();go(cur-1);}
+  else if(k==="Home")go(0);else if(k==="End")go(slides.length-1);
+  else if(k==="n"||k==="N")notes.classList.toggle("open");
+  else if(k==="g"||k==="G")ov.classList.toggle("open");
+  else if(k==="Escape")ov.classList.remove("open");
+  else if(k==="f"||k==="F")full();
+  else if(k==="t"||k==="T"){if(startAt===null)startTimer();else toggleTimer();tick();}
+  else if(k==="r"||k==="R"){elapsed=0;startAt=null;running=false;tick();}
+  else if(/^[0-5]$/.test(k)&&slides[cur].dataset.title.startsWith("Demo 2"))showSig(+k);
+});
+document.getElementById("b-notes").onclick=()=>notes.classList.toggle("open");
+document.getElementById("b-grid").onclick=()=>ov.classList.toggle("open");
+document.getElementById("b-full").onclick=full;
+function full(){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{});}catch(e){}}
+/* clic en el borde derecho/izquierdo del escenario avanza/retrocede */
+document.getElementById("viewport").addEventListener("click",e=>{
+  if(e.target.closest("button,a,input,.mail,.hdrbox,.explain,.term,.sig,.run"))return;
+  if(e.clientX>innerWidth*0.82)go(cur+1);else if(e.clientX<innerWidth*0.18)go(cur-1);
+});
+let hideT;const chrome=document.getElementById("chrome");
+addEventListener("mousemove",()=>{chrome.classList.remove("hide");clearTimeout(hideT);hideT=setTimeout(()=>chrome.classList.add("hide"),2500);});
+
+/* =========================================================
+   Modelo del laboratorio: traducción de demo.py a JavaScript
+   ========================================================= */
+const ORG="altoverde.example",RECEPTOR="mx.altoverde.example",RELAY="relay.correo-masivo.example";
+const IP_ATACANTE="198.51.100.23",IP_ORG="192.0.2.10";
+const TEXTO_ENLACE="https://portal.altoverde.example/verificar";
+const DESTINO_ENLACE="https://altoverde.example.portal-verificar.example/login";
+const ESC={suplantacion:{sobre:"rebote@correo-masivo.example",from:"soporte@altoverde.example"},parecido:{sobre:"rebote@altoverde-ayuda.example",from:"soporte@altoverde-ayuda.example"}};
+const dom=a=>a.split("@").pop().toLowerCase();
+const org2=d=>d.toLowerCase().split(".").slice(-2).join(".");
+function dns(p){return{"altoverde.example":{spf:[IP_ORG],dmarc:p},"correo-masivo.example":{spf:[IP_ATACANTE],dmarc:null},"altoverde-ayuda.example":{spf:[IP_ATACANTE],dmarc:"reject"}};}
+function evaluar(d,sobre,rem){const spf=(d[sobre]?.spf||[]).includes(IP_ATACANTE);const al=spf&&org2(sobre)===org2(rem);return{spf:spf?"pass":"fail",dkim:"none",dmarc:al?"pass":"fail",politica:(d[rem]?.dmarc)||"none",sobre,from:rem};}
+
+let buzon=null; /* último correo entregado */
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const S=t=>'  <span class="S">S:</span> '+esc(t);
+const C=t=>'  <span class="C">C:</span> '+esc(t);
+const U=t=>'\n<span class="U">'+esc(t)+'</span>';
+
+function enviar(escenario,politica){
+  const e=ESC[escenario];const out=[];buzon=null;
+  const det=escenario==="suplantacion"?" | p="+politica+" en "+ORG:"";
+  out.push(U("Escenario: "+escenario+det));
+  out.push("  Sobre (MAIL FROM): "+e.sobre);
+  out.push("  From visible:      "+e.from);
+  out.push(U("Conversación SMTP (solo en 127.0.0.1)"));
+  const r=evaluar(dns(politica),dom(e.sobre),dom(e.from));
+  out.push(S("220 "+RECEPTOR+" ESMTP laboratorio"));
+  out.push(C("ehlo "+RELAY));out.push(S("250 "+RECEPTOR));
+  out.push(C("mail FROM:<"+e.sobre+">"));out.push(S("250 2.1.0 Sobre recibido (no se verifica aun)"));
+  out.push(C("rcpt TO:<rectoria@altoverde.example>"));out.push(S("250 2.1.5 Destinatario aceptado"));
+  out.push(C("data"));out.push(S("354 Envie el mensaje y termine con un punto"));
+  out.push(C("(cabeceras y cuerpo del mensaje)"));
+  const rech=r.dmarc==="fail"&&r.politica==="reject";
+  if(rech){out.push(S("550 5.7.1 Rechazado por politica DMARC del dominio del From"));out.push(C("rset"));out.push(S("250 2.0.0 Listo"));}
+  else{out.push(S("250 2.0.0 Entregado al buzon"));buzon={...r,replyTo:"altoverde-ayuda.example"};}
+  out.push(C("QUIT"));out.push(S("221 Adios"));
+  out.push(U("Decisión del receptor"));
+  out.push("  spf="+r.spf+"  dkim="+r.dkim+"  dmarc="+r.dmarc+"  p="+r.politica);
+  out.push(rech?'  <span class="R">RECHAZADO</span>: nunca llegó al buzón':'  <span class="Y">ENTREGADO</span>: buzon/ultimo.eml');
+  return out;
+}
+function analizar(){
+  const out=[];
+  if(!buzon){return["No hay correo en el buzón: el último envío fue rechazado o aún no se ha enviado."];}
+  const b=buzon,Y=t=>'<span class="Y">'+esc(t)+'</span>';
+  out.push(U("Identidad"));
+  out.push("  From visible: "+Y(b.from));out.push("  Sobre:        "+Y(b.sobre));out.push("  Responder a:  "+Y(b.replyTo));
+  out.push(U("Autenticación"));
+  out.push("  spf="+b.spf+": autoriza a "+b.sobre+", "+(org2(b.sobre)===org2(b.from)?"igual al From":"no al From"));
+  out.push("  dkim="+b.dkim+": nadie firmó el mensaje");
+  out.push("  dmarc="+b.dmarc+" (p="+b.politica+"): "+(b.dmarc==="pass"?"alineado con el From":"sin alineación con el From"));
+  out.push(U("Enlaces"));
+  const real=org2(new URL(DESTINO_ENLACE).hostname);
+  out.push("  Texto:        "+TEXTO_ENLACE);out.push("  Destino:      "+DESTINO_ENLACE);out.push("  Dominio real: "+Y(real));
+  const v=[];
+  if(b.dmarc==="fail")v.push("El From no está autenticado (DMARC falla).");
+  if(org2(b.from)!==ORG)v.push("El remitente no es de la organización: "+b.from+".");
+  if(org2(b.replyTo)!==ORG)v.push("Las respuestas irían fuera de la organización: "+b.replyTo+".");
+  if(real!==ORG)v.push("El enlace lleva a un dominio ajeno: "+real+".");
+  out.push(U("Veredicto"));
+  out.push("  "+'<span class="Y">VERIFICADO</span>');v.forEach(x=>out.push("    - "+esc(x)));
+  out.push("  INDICIO");["Urgencia en el asunto.","Saludo genérico.","Amenaza con plazo."].forEach(x=>out.push("    - "+x));
+  out.push("  "+'<span class="R">NO DEMOSTRADO</span>');out.push("    - Quién lo envió. El correo prueba el engaño, no al autor.");
+  return out;
+}
+function dominioCmd(){
+  const d="аltoverde.example";let h;try{h=new URL("https://"+d).hostname;}catch(e){h="xn--ltoverde-06g.example";}
+  return[U("Dominio"),"  Se ve así:  "+d,"  Posición 0: 'а' es "+'<span class="Y">U+0430</span>'+", no ASCII","  En DNS es:  "+'<span class="Y">'+h+"</span>"];
+}
+
+/* terminal */
+const RUNS=[
+  {t:"1 · El From es mentira y llega",cmd:"python3 demo.py enviar suplantacion --politica none",f:()=>enviar("suplantacion","none")},
+  {t:"2 · Cambiamos una sola pieza",cmd:"python3 demo.py enviar suplantacion --politica reject",f:()=>enviar("suplantacion","reject")},
+  {t:"3 · El atacante se adapta",cmd:"python3 demo.py enviar parecido",f:()=>enviar("parecido","none")},
+  {t:"4 · Se analiza lo que llegó",cmd:"python3 demo.py analizar",f:analizar},
+  {t:"Extra · Homógrafo",cmd:"python3 demo.py dominio",f:dominioCmd}
+];
+const runs=document.getElementById("runs"),term=document.getElementById("term");
+let speed=28,typing=null;
+RUNS.forEach((r,i)=>{const b=document.createElement("button");b.className="run";b.innerHTML="<b>"+r.t+"</b><code>$ "+r.cmd+"</code>";b.onclick=()=>run(i,b);runs.appendChild(b);});
+const sp=document.createElement("div");sp.className="speed";sp.innerHTML='Velocidad <button data-s="60">lenta</button><button data-s="28" class="cur">normal</button><button data-s="0">instantánea</button><button data-c="1" style="margin-left:auto">Limpiar</button>';
+runs.appendChild(sp);
+sp.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.c){term.innerHTML="";buzon=null;runs.querySelectorAll(".run").forEach(x=>x.classList.remove("cur"));return;}speed=+b.dataset.s;sp.querySelectorAll("[data-s]").forEach(x=>x.classList.toggle("cur",x===b));});
+function run(i,btn){
+  clearInterval(typing);runs.querySelectorAll(".run").forEach(x=>x.classList.toggle("cur",x===btn));
+  const lines=['<span class="P">~/PRESENTACION $</span> '+esc(RUNS[i].cmd)].concat(RUNS[i].f());
+  term.innerHTML+=(term.innerHTML?"\n\n":"");let k=0;
+  const step=()=>{term.innerHTML+=(k?"\n":"")+lines[k];k++;term.scrollTop=term.scrollHeight;if(k>=lines.length)clearInterval(typing);};
+  if(!speed){while(k<lines.length)step();return;}
+  step();typing=setInterval(step,speed*4);
+}
+
+/* =========================================================
+   Correo simulado (diapositivas 12 y 13)
+   ========================================================= */
+function mailHtml(withPins){
+  const P=(n,html)=>withPins?'<span class="hot" data-h="'+n+'"><span class="pin">'+n+"</span>"+html+"</span>":html;
+  return '<div class="subj">'+P(3,"URGENTE: su cuenta se suspende hoy")+'</div>'+
+  '<div class="from"><div class="av">TI</div><div><b>'+P(1,"Mesa de Servicios TI")+'</b><div class="addr">&lt;soporte@altoverde.example&gt; · Para: Rectoría</div></div></div>'+
+  '<div class="det" role="button" tabindex="0">▸ Ver detalles</div>'+
+  '<div class="hdrs">De: soporte@altoverde.example<br>'+P(2,"Responder a: soporte@altoverde-ayuda.example")+'<br>Para: rectoria@altoverde.example</div>'+
+  '<div class="body"><p>'+P(4,"Estimado usuario:")+'</p><p>Detectamos actividad inusual en su cuenta institucional. Para evitar la '+P(4,"suspensión y la pérdida de su correo, verifique su identidad en las próximas 2 horas.")+'</p>'+
+  '<p>'+P(5,'<a class="lk" tabindex="0">'+TEXTO_ENLACE+'</a>')+'</p><p class="msig">Mesa de Servicios TI · Universidad Alto Verde</p></div>'+
+  '<div class="status"></div>';
+}
+document.querySelectorAll("[data-mail]").forEach(m=>{
+  m.innerHTML=mailHtml(m.dataset.mail==="2");
+  const det=m.querySelector(".det"),hd=m.querySelector(".hdrs");
+  const tog=()=>{hd.classList.toggle("open");det.textContent=(hd.classList.contains("open")?"▾ Ocultar detalles":"▸ Ver detalles");};
+  det.onclick=tog;det.onkeydown=e=>{if(e.key==="Enter")tog();};
+  const lk=m.querySelector(".lk"),st=m.querySelector(".status");
+  const show=()=>{st.textContent=DESTINO_ENLACE;st.classList.add("show");};
+  const hide=()=>st.classList.remove("show");
+  lk.addEventListener("mouseenter",show);lk.addEventListener("mouseleave",hide);lk.addEventListener("focus",show);lk.addEventListener("blur",hide);
+  lk.addEventListener("click",e=>{e.preventDefault();show();});
+});
+let votes=0;const vEl=document.getElementById("votes");
+document.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>{votes=Math.max(0,votes+ +b.dataset.vote);vEl.textContent=votes;});
+
+const SIGS=[
+  {n:1,b:"Autoridad",s:"Se presenta como la mesa de TI. El nombre visible lo escribe quien envía.",k:"Persona"},
+  {n:2,b:"Respuestas a otro dominio",s:"Solo se ve en los detalles: Reply-To apunta a altoverde-ayuda.example.",k:"Cabecera"},
+  {n:3,b:"Urgencia",s:"\"URGENTE\" y \"hoy\" en el asunto, para actuar antes de pensar.",k:"Persona"},
+  {n:4,b:"Miedo y saludo genérico",s:"Amenaza con perder el correo en 2 horas. \"Estimado usuario\" en vez del nombre.",k:"Persona"},
+  {n:5,b:"El enlace",s:"El texto parece de Alto Verde. Pasa el cursor: el destino es otro.",k:"Enlace"}
+];
+const sigs=document.getElementById("sigs");
+SIGS.forEach(x=>{const b=document.createElement("button");b.className="sig";b.dataset.n=x.n;b.innerHTML='<div class="n">'+x.n+'</div><div><b>'+x.b+'</b><span>'+x.s+'</span><span class="k">'+x.k+'</span></div>';b.onclick=()=>showSig(x.n);sigs.appendChild(b);});
+function showSig(n){
+  const m=document.querySelector('[data-mail="2"]');
+  m.querySelectorAll(".hot").forEach(h=>h.classList.toggle("on",n===0||+h.dataset.h===n));
+  sigs.querySelectorAll(".sig").forEach(s=>s.classList.toggle("on",n===0||+s.dataset.n===n));
+  const hd=m.querySelector(".hdrs"),det=m.querySelector(".det");
+  if(n===2||n===0){hd.classList.add("open");det.textContent="▾ Ocultar detalles";}
+  const st=m.querySelector(".status");if(n===5||n===0){st.textContent=DESTINO_ENLACE;st.classList.add("show");}else st.classList.remove("show");
+}
+
+/* =========================================================
+   Cabeceras (diapositiva 14)
+   ========================================================= */
+const hb=document.getElementById("hdrbox"),ex=document.getElementById("explain");
+function focusK(k){hb.querySelectorAll("[data-k]").forEach(x=>x.classList.toggle("focus",x.dataset.k===k));ex.querySelectorAll(".e").forEach(x=>x.classList.toggle("focus",x.dataset.k===k));}
+ex.querySelectorAll(".e").forEach(e=>{e.addEventListener("mouseenter",()=>focusK(e.dataset.k));e.addEventListener("click",()=>focusK(e.dataset.k));});
+hb.querySelectorAll("[data-k]").forEach(e=>{e.addEventListener("mouseenter",()=>focusK(e.dataset.k));});
+hb.addEventListener("mouseleave",()=>focusK(null));
+
+/* =========================================================
+   Analizador de enlaces (diapositiva 17)
+   ========================================================= */
+const SUF2=["com.co","edu.co","gov.co","org.co","net.co","mil.co","co.uk","ac.uk","gov.uk","com.mx","edu.mx","gob.mx","com.br","gov.br","com.ar","gob.ar","com.pe","gob.pe","com.au"];
+function registrable(h){const p=h.split(".");const last2=p.slice(-2).join(".");if(SUF2.includes(last2)&&p.length>=3)return p.slice(-3).join(".");return last2;}
+const inp=document.getElementById("urlin"),dres=document.getElementById("dres");
+function analyzeUrl(){
+  let raw=inp.value.trim();if(!raw){dres.innerHTML="";return;}
+  if(!/^[a-z]+:\/\//i.test(raw))raw="https://"+raw;
+  let u;try{u=new URL(raw);}catch(e){dres.innerHTML='<span class="bad">No es un enlace válido.</span> Revisa que no tenga espacios.';return;}
+  const shown=raw.replace(/^[a-z]+:\/\//i,"").split(/[\/?#]/)[0].replace(/:\d+$/,"");
+  const host=u.hostname;const reg=registrable(host);const sub=host.slice(0,Math.max(0,host.length-reg.length-1));
+  const nonAscii=[...shown].filter(c=>c.charCodeAt(0)>127);
+  let h="Host: "+esc(sub?sub+".":"")+'<span class="ok">'+esc(reg)+"</span><br>";
+  h+="Dominio registrado: <b>"+esc(reg)+"</b><br>";
+  if(sub)h+="Subdominio (lo elige el dueño de "+esc(reg)+"): "+esc(sub)+"<br>";
+  if(nonAscii.length)h+='<span class="bad">Tiene letras no ASCII</span> ('+nonAscii.map(c=>"U+"+c.charCodeAt(0).toString(16).toUpperCase().padStart(4,"0")).join(", ")+"). En DNS es: "+esc(host)+"<br>";
+  if(u.username)h+='<span class="bad">Truco del @</span>: lo que va antes de @ ('+esc(u.username)+") se ignora.<br>";
+  h+='<span style="opacity:.6;font-size:15px">Aproximado: usa las dos últimas etiquetas, o tres para .com.co, .edu.co y similares.</span>';
+  dres.innerHTML=h;
+}
+inp.addEventListener("input",analyzeUrl);analyzeUrl();
+try{document.getElementById("homo-b").textContent=new URL("https://аltoverde.example").hostname;}catch(e){document.getElementById("homo-b").textContent="xn--ltoverde-06g.example";}
+
+/* inicio */
+slides[0].classList.add("active");
+go(fromHash(),true);
+})();
+</script>
+</body>
+</html>
