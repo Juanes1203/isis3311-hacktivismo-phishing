@@ -4,7 +4,8 @@ Mini exposición del Grupo 4 · ISIS 3311 Ciberseguridad · Universidad de los A
 David Elías Forero Cobos y Juan Esteban Jiménez Benavides
 
 - **Presentación:** `index.html` (publicada con GitHub Pages). Se abre también con doble clic, sin internet.
-- **Demo en vivo:** `demo.py` (instrucciones abajo).
+- **Demo en vivo:** dentro de la misma página, diapositiva 15 (botón **Demo** o tecla **D**). No necesita terminal ni internet.
+- **Versión de terminal (opcional):** `demo.py`, el mismo modelo en Python (instrucciones abajo).
 
 ## Controles de la presentación
 
@@ -14,11 +15,19 @@ David Elías Forero Cobos y Juan Esteban Jiménez Benavides
 | ← | Anterior |
 | N | Notas del presentador (quién habla, tiempos, puntos de control) |
 | G | Índice, incluido el anexo de preguntas |
+| D | Ir a la demo (laboratorio SMTP) |
 | F | Pantalla completa |
 | T / R | Pausar o reiniciar el cronómetro |
 | 1–5, 0 | En la diapositiva 13, resaltar cada señal del correo |
 
-La diapositiva 15 trae la misma demo de `demo.py` traducida a JavaScript, como respaldo si la terminal falla.
+## La demo en la página (diapositiva 15)
+
+1. Elige el **From** que escribe el atacante: suplantación exacta o dominio parecido.
+2. Elige la **política DMARC** de altoverde.example: `p=none`, `p=quarantine` o `p=reject`.
+3. Pulsa **Enviar correo**. Un sobre animado va del atacante al receptor, se encienden SPF, DKIM y DMARC, y el correo cae en Bandeja, Spam o Rechazado. Abajo se ve la conversación SMTP.
+4. **Analizar buzón** muestra el veredicto: verificado, indicio y no demostrado.
+
+Los botones del **Guion** (1 a 4) hacen la secuencia completa de la exposición con un clic cada uno.
 
 ## Todo es ficticio
 
@@ -26,7 +35,7 @@ Universidad Alto Verde y Colectivo Aguacero son inventados. Los dominios `.examp
 
 ---
 
-# Demo en vivo
+# Demo en terminal (opcional)
 
 Simula la entrega de un correo de phishing entre dos programas de este Mac.
 No necesita internet ni instalar nada. Corre con Python 3.9 o superior.
@@ -53,7 +62,7 @@ Antes de la clase, abre la terminal, aumenta la letra con `Cmd +` y entra a la c
 cd ~/Desktop/PRESENTACION
 ```
 
-Si la terminal falla, la presentación (`index.html`, diapositiva 15) tiene la misma demo simulada en el navegador.
+La diapositiva 15 de la presentación tiene esta misma demo en el navegador; la terminal es opcional.
 
 **1. El From es mentira y llega.** Señala que `MAIL FROM` y el `From` visible son distintos.
 

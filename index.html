@@ -27,8 +27,8 @@ html,body{height:100%;background:#0a0a0a;color:var(--paper);font-family:var(--bo
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 :focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 
-#viewport{position:fixed;inset:0;display:grid;place-items:center}
-#stage{width:1600px;height:900px;position:relative;transform-origin:center center;flex:none}
+#viewport{position:fixed;inset:0;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:center center;transform:translate(-50%,-50%)}
 .slide{position:absolute;inset:0;display:none;overflow:hidden;background:var(--ink);color:var(--paper)}
 .slide.active{display:block}
 .slide.paper{background:var(--paper);color:var(--ink)}
@@ -41,6 +41,7 @@ h1,h2,.big{font-family:var(--display);font-weight:400;text-transform:uppercase;l
 h1{font-size:170px}
 h2{font-size:96px}
 .hl{background:var(--yellow);color:var(--ink);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
 .lead{font-size:34px;line-height:1.3;font-weight:500;max-width:30ch}
 .small{font-size:22px;line-height:1.45}
 .mono{font-family:var(--mono)}
@@ -221,13 +222,53 @@ h2{font-size:96px}
 .explain .e span{font-size:19px;line-height:1.4;opacity:.9}
 
 /* laboratorio SMTP */
-.labgrid{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:22px;height:640px}
-.labgrid .ctrls{display:flex;flex-direction:column;gap:12px}
-.run{display:block;text-align:left;border:2px solid #3a3a3a;border-radius:8px;padding:14px 16px;background:#171717}
-.run:hover{border-color:var(--yellow)}
-.run.cur{border-color:var(--yellow);background:#2a2610}
-.run b{display:block;font-size:20px}
-.run code{font-family:var(--mono);font-size:14px;color:var(--yellow);display:block;margin-top:6px;word-break:break-all}
+.smtp{display:grid;grid-template-columns:440px 1fr;gap:30px;margin-top:18px;height:668px}
+.smtp .ctrls{display:flex;flex-direction:column;gap:14px;min-height:0}
+.lbl{font-family:var(--mono);font-size:15px;color:var(--mute);margin-bottom:7px}
+.lbl b{color:var(--yellow);font-weight:600}
+.seg{display:grid;gap:7px;transition:opacity .2s}
+.seg3{grid-template-columns:repeat(3,1fr)}
+.seg button{border:2px solid #3a3a3a;border-radius:8px;padding:9px 12px;text-align:left;background:#171717;font-family:var(--mono);font-size:15px;line-height:1.3}
+.seg button:hover{border-color:#777}
+.seg button small{display:block;font-family:var(--body);font-size:13px;color:var(--mute);margin-top:2px}
+.seg button.cur{border-color:var(--yellow);background:#2a2610}
+.seg.dis{opacity:.4}
+.hint{font-size:14px;line-height:1.4;color:var(--mute);margin-top:7px;min-height:40px}
+.go{display:flex;gap:10px}
+.send{flex:1;background:var(--yellow);color:var(--ink)!important;font-weight:700;font-size:21px;border-radius:8px;padding:14px}
+.send:hover{filter:brightness(1.08)}
+.ghost{border:2px solid var(--yellow)!important;color:var(--yellow)!important;border-radius:8px;padding:12px 16px;font-weight:600;font-size:17px}
+.ghost:hover{background:#2a2610}
+.script{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.script button{border:1px solid #3a3a3a;border-radius:6px;padding:8px 10px;text-align:left;font-size:14px;line-height:1.3;background:#151515}
+.script button:hover,.script button.cur{border-color:var(--yellow)}
+.script button b{color:var(--yellow);font-family:var(--mono);margin-right:6px}
+.rightcol{display:flex;flex-direction:column;gap:16px;min-height:0}
+.flow{display:grid;grid-template-columns:240px 1fr 260px 1fr 190px;align-items:center;flex:none;height:178px;padding:0 4px}
+.node{border:2px solid #3a3a3a;border-radius:10px;padding:12px 14px;background:#171717;transition:border-color .25s}
+.node small{font-family:var(--mono);font-size:12px;color:var(--mute);display:block;text-transform:uppercase;letter-spacing:.06em}
+.node b{font-family:var(--mono);font-size:13px;display:block;margin:4px 0 2px;white-space:nowrap;font-weight:600}
+.node span.ip{font-family:var(--mono);font-size:13px;color:var(--mute)}
+.node.atk{border-color:#7a3426}
+.node.mx.busy{border-color:var(--yellow)}
+.chk{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.chk span{text-align:center;font-family:var(--mono);font-size:12px;padding:5px 0;border-radius:4px;background:#262626;color:#777;transition:background .25s,color .25s}
+.chk span.pass{background:#2f6b3a;color:#e4ffe0}
+.chk span.fail{background:var(--red);color:#fff}
+.chk span.none{background:#4a4a4a;color:#eee}
+.wire{height:3px;background:#333;position:relative;margin:0 12px}
+.wire i{position:absolute;left:0;top:50%;width:30px;height:21px;margin-top:-10.5px;background:var(--yellow);color:var(--ink);border-radius:3px;font-style:normal;font-size:15px;display:grid;place-items:center;opacity:0}
+.wire i.go{animation:fly .8s ease forwards}
+.wire i.stop{animation:flystop .8s ease forwards;background:var(--red);color:#fff}
+@keyframes fly{0%{left:0;opacity:1}100%{left:calc(100% - 30px);opacity:1}}
+@keyframes flystop{0%{left:0;opacity:1}60%{left:40%;opacity:1}100%{left:40%;opacity:0}}
+.bins{display:flex;flex-direction:column;gap:7px}
+.bins div{border:2px solid #3a3a3a;border-radius:8px;padding:7px 12px;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;transition:all .25s}
+.bins em{font-style:normal;font-family:var(--mono);font-size:14px;opacity:.8}
+.bins .hit[data-b=inbox]{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+.bins .hit[data-b=spam]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.bins .hit[data-b=reject]{background:var(--red);color:#fff;border-color:var(--red)}
+.smtp .term{flex:1;min-height:0}
 .term{background:#050505;border:1px solid #2c2c2c;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
 .term .bar{height:34px;background:#1b1b1b;display:flex;align-items:center;gap:8px;padding:0 14px;font-family:var(--mono);font-size:13px;color:#888}
 .term .bar i{width:12px;height:12px;border-radius:50%;background:#444;display:block}
@@ -657,26 +698,60 @@ h2{font-size:96px}
 </section>
 
 <!-- 15 -->
-<section class="slide" data-title="Demo 4 · Laboratorio SMTP" data-who="David, en la terminal" data-sec="90">
-  <div class="pad" style="padding-top:50px">
-    <div class="eyebrow">Demo 4 de 5 · En vivo en 127.0.0.1 · Respaldo en el navegador</div>
-    <h2 style="font-size:76px">Cambiemos una pieza</h2>
-    <div class="labgrid">
-      <div class="ctrls" id="runs"></div>
-      <div class="term" aria-live="polite">
-        <div class="bar"><i></i><i></i><i></i><span style="margin-left:10px">~/PRESENTACION — zsh</span></div>
-        <pre id="term"></pre>
+<section class="slide" id="lab" data-title="Demo 4 · Laboratorio SMTP" data-who="David" data-sec="90">
+  <div class="pad" style="padding-top:44px">
+    <div class="eyebrow">Demo 4 de 5 · Laboratorio en vivo · Todo ocurre dentro de esta página</div>
+    <h2 style="font-size:72px">Cambiemos una pieza</h2>
+    <div class="smtp">
+      <div class="ctrls">
+        <div>
+          <div class="lbl"><b>1</b> · El From que escribe el atacante</div>
+          <div class="seg" data-g="esc">
+            <button data-v="suplantacion" class="cur">soporte@altoverde.example<small>Suplantación exacta del dominio real</small></button>
+            <button data-v="parecido">soporte@altoverde-ayuda.example<small>Dominio parecido que el atacante sí controla</small></button>
+          </div>
+        </div>
+        <div>
+          <div class="lbl"><b>2</b> · Política DMARC de altoverde.example</div>
+          <div class="seg seg3" data-g="pol">
+            <button data-v="none" class="cur">p=none<small>solo observa</small></button>
+            <button data-v="quarantine">p=quarantine<small>manda a spam</small></button>
+            <button data-v="reject">p=reject<small>rechaza</small></button>
+          </div>
+          <p class="hint" id="polhint"></p>
+        </div>
+        <div class="go"><button class="send" id="send">Enviar correo ▶</button><button class="ghost" id="ana">Analizar buzón</button></div>
+        <div>
+          <div class="lbl">Guion de la demo</div>
+          <div class="script" id="script"></div>
+        </div>
+        <div class="speed"></div>
+      </div>
+      <div class="rightcol">
+        <div class="flow" id="flow">
+          <div class="node atk"><small>Atacante</small><b>relay.correo-masivo.example</b><span class="ip">198.51.100.23</span></div>
+          <div class="wire"><i>✉</i></div>
+          <div class="node mx"><small>Receptor de Alto Verde</small><b>mx.altoverde.example</b><div class="chk"><span data-c="spf">SPF</span><span data-c="dkim">DKIM</span><span data-c="dmarc">DMARC</span></div></div>
+          <div class="wire"><i>✉</i></div>
+          <div class="bins"><div data-b="inbox">Bandeja <em>0</em></div><div data-b="spam">Spam <em>0</em></div><div data-b="reject">Rechazado <em>0</em></div></div>
+        </div>
+        <div class="term" aria-live="polite">
+          <div class="bar"><i></i><i></i><i></i><span style="margin-left:10px">laboratorio · 127.0.0.1 · equivalente a demo.py</span></div>
+          <pre id="term"></pre>
+        </div>
       </div>
     </div>
   </div>
   <script type="text/notes">
-  - Aclarar: receptor SMTP local, DNS simulado y sin firma DKIM. Modelo simplificado; nada sale de este computador.
-  - En vivo, en la terminal: <code>python3 demo.py enviar suplantacion --politica none</code>. Señalar que MAIL FROM y From son distintos, y que el servidor acepta.
-  - <code>python3 demo.py enviar suplantacion --politica reject</code>. Señalar el 550: cambió una sola línea de política.
-  - <code>python3 demo.py enviar parecido</code>
-  - <code>python3 demo.py analizar</code>
+  - La demo corre aquí mismo, en el navegador: no hace falta terminal ni internet. Es el mismo modelo de demo.py.
+  - Aclarar: DNS simulado y sin firma DKIM. Modelo simplificado de SPF y DMARC; nada sale de esta página.
+  - Seguir el guion con los botones 1 a 4 (o elegir From y política y pulsar Enviar). Mirar el sobre animado y los semáforos SPF / DKIM / DMARC.
+  - 1 · From falso, p=none: MAIL FROM y From son distintos; DMARC falla y aun así llega a la bandeja.
+  - 2 · Mismo correo, p=reject: 550 y el sobre se detiene. Cambió una sola línea de DNS. (p=quarantine: llega, pero a spam.)
+  - 3 · Dominio parecido: la política de Alto Verde ya no aplica; DMARC pasa porque el atacante controla ese dominio.
+  - 4 · Analizar: leer el veredicto en voz alta.
   - Idea clave: DMARC prueba que el dominio autorizó el mensaje, no que ese dominio sea confiable.
-  - <b>Si la terminal falla:</b> usar los botones de esta diapositiva. Es el mismo modelo, traducido a JavaScript, con la misma salida. La siguiente resume los tres resultados.
+  - Opcional: la misma demo en terminal con <code>python3 demo.py …</code> (ver README).
   </script>
 </section>
 
@@ -904,6 +979,7 @@ h2{font-size:96px}
   <span id="num">1 / 24</span>
   <div id="progress"><i></i></div>
   <span id="clock" title="Cronómetro (T para iniciar/pausar, R para reiniciar)">00:00</span>
+  <button id="b-demo" title="Ir a la demo (D)">Demo</button>
   <button id="b-notes" title="Notas (N)">Notas</button>
   <button id="b-grid" title="Vista general (G)">Índice</button>
   <button id="b-full" title="Pantalla completa (F)">Pantalla completa</button>
@@ -917,7 +993,7 @@ const stage=document.getElementById("stage");
 let cur=0;
 
 /* ---------- escala ---------- */
-function fit(){const s=Math.min(innerWidth/1600,(innerHeight)/900);stage.style.transform="scale("+s+")";}
+function fit(){const s=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform="translate(-50%,-50%) scale("+s+")";}
 addEventListener("resize",fit);fit();
 
 /* ---------- notas y tiempos ---------- */
@@ -977,17 +1053,20 @@ addEventListener("keydown",e=>{
   else if(k==="g"||k==="G")ov.classList.toggle("open");
   else if(k==="Escape")ov.classList.remove("open");
   else if(k==="f"||k==="F")full();
+  else if(k==="d"||k==="D")go(labIdx);
   else if(k==="t"||k==="T"){if(startAt===null)startTimer();else toggleTimer();tick();}
   else if(k==="r"||k==="R"){elapsed=0;startAt=null;running=false;tick();}
   else if(/^[0-5]$/.test(k)&&slides[cur].dataset.title.startsWith("Demo 2"))showSig(+k);
 });
+const labIdx=slides.indexOf(document.getElementById("lab"));
+document.getElementById("b-demo").onclick=()=>go(labIdx);
 document.getElementById("b-notes").onclick=()=>notes.classList.toggle("open");
 document.getElementById("b-grid").onclick=()=>ov.classList.toggle("open");
 document.getElementById("b-full").onclick=full;
 function full(){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{});}catch(e){}}
 /* clic en el borde derecho/izquierdo del escenario avanza/retrocede */
 document.getElementById("viewport").addEventListener("click",e=>{
-  if(e.target.closest("button,a,input,.mail,.hdrbox,.explain,.term,.sig,.run"))return;
+  if(e.target.closest("button,a,input,.mail,.hdrbox,.explain,.term,.sig,.smtp"))return;
   if(e.clientX>innerWidth*0.82)go(cur+1);else if(e.clientX<innerWidth*0.18)go(cur-1);
 });
 let hideT;const chrome=document.getElementById("chrome");
@@ -1022,17 +1101,21 @@ function enviar(escenario,politica){
   const r=evaluar(dns(politica),dom(e.sobre),dom(e.from));
   out.push(S("220 "+RECEPTOR+" ESMTP laboratorio"));
   out.push(C("ehlo "+RELAY));out.push(S("250 "+RECEPTOR));
+  out.push(()=>fly(wires[0],"go"));
   out.push(C("mail FROM:<"+e.sobre+">"));out.push(S("250 2.1.0 Sobre recibido (no se verifica aun)"));
   out.push(C("rcpt TO:<rectoria@altoverde.example>"));out.push(S("250 2.1.5 Destinatario aceptado"));
   out.push(C("data"));out.push(S("354 Envie el mensaje y termine con un punto"));
   out.push(C("(cabeceras y cuerpo del mensaje)"));
-  const rech=r.dmarc==="fail"&&r.politica==="reject";
+  out.push(()=>flowChecks(r));
+  const rech=r.dmarc==="fail"&&r.politica==="reject",spam=r.dmarc==="fail"&&r.politica==="quarantine";
+  const kind=rech?"reject":spam?"spam":"inbox";
   if(rech){out.push(S("550 5.7.1 Rechazado por politica DMARC del dominio del From"));out.push(C("rset"));out.push(S("250 2.0.0 Listo"));}
-  else{out.push(S("250 2.0.0 Entregado al buzon"));buzon={...r,replyTo:"altoverde-ayuda.example"};}
+  else{out.push(S(spam?"250 2.0.0 Entregado en cuarentena (spam)":"250 2.0.0 Entregado al buzon"));buzon={...r,replyTo:"altoverde-ayuda.example"};}
+  out.push(()=>flowResult(kind));
   out.push(C("QUIT"));out.push(S("221 Adios"));
   out.push(U("Decisión del receptor"));
   out.push("  spf="+r.spf+"  dkim="+r.dkim+"  dmarc="+r.dmarc+"  p="+r.politica);
-  out.push(rech?'  <span class="R">RECHAZADO</span>: nunca llegó al buzón':'  <span class="Y">ENTREGADO</span>: buzon/ultimo.eml');
+  out.push(rech?'  <span class="R">RECHAZADO</span>: nunca llegó al buzón':spam?'  <span class="Y">EN SPAM</span>: buzon/ultimo.eml (llegó, pero en cuarentena)':'  <span class="Y">ENTREGADO</span>: buzon/ultimo.eml');
   return out;
 }
 function analizar(){
@@ -1064,28 +1147,57 @@ function dominioCmd(){
   return[U("Dominio"),"  Se ve así:  "+d,"  Posición 0: 'а' es "+'<span class="Y">U+0430</span>'+", no ASCII","  En DNS es:  "+'<span class="Y">'+h+"</span>"];
 }
 
-/* terminal */
-const RUNS=[
-  {t:"1 · El From es mentira y llega",cmd:"python3 demo.py enviar suplantacion --politica none",f:()=>enviar("suplantacion","none")},
-  {t:"2 · Cambiamos una sola pieza",cmd:"python3 demo.py enviar suplantacion --politica reject",f:()=>enviar("suplantacion","reject")},
-  {t:"3 · El atacante se adapta",cmd:"python3 demo.py enviar parecido",f:()=>enviar("parecido","none")},
-  {t:"4 · Se analiza lo que llegó",cmd:"python3 demo.py analizar",f:analizar},
-  {t:"Extra · Homógrafo",cmd:"python3 demo.py dominio",f:dominioCmd}
-];
-const runs=document.getElementById("runs"),term=document.getElementById("term");
-let speed=28,typing=null;
-RUNS.forEach((r,i)=>{const b=document.createElement("button");b.className="run";b.innerHTML="<b>"+r.t+"</b><code>$ "+r.cmd+"</code>";b.onclick=()=>run(i,b);runs.appendChild(b);});
-const sp=document.createElement("div");sp.className="speed";sp.innerHTML='Velocidad <button data-s="60">lenta</button><button data-s="28" class="cur">normal</button><button data-s="0">instantánea</button><button data-c="1" style="margin-left:auto">Limpiar</button>';
-runs.appendChild(sp);
-sp.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.c){term.innerHTML="";buzon=null;runs.querySelectorAll(".run").forEach(x=>x.classList.remove("cur"));return;}speed=+b.dataset.s;sp.querySelectorAll("[data-s]").forEach(x=>x.classList.toggle("cur",x===b));});
-function run(i,btn){
-  clearInterval(typing);runs.querySelectorAll(".run").forEach(x=>x.classList.toggle("cur",x===btn));
-  const lines=['<span class="P">~/PRESENTACION $</span> '+esc(RUNS[i].cmd)].concat(RUNS[i].f());
-  term.innerHTML+=(term.innerHTML?"\n\n":"");let k=0;
-  const step=()=>{term.innerHTML+=(k?"\n":"")+lines[k];k++;term.scrollTop=term.scrollHeight;if(k>=lines.length)clearInterval(typing);};
-  if(!speed){while(k<lines.length)step();return;}
+/* laboratorio interactivo */
+const term=document.getElementById("term"),labEl=document.getElementById("lab");
+const lab={esc:"suplantacion",pol:"none"};let speed=28,typing=null;const counts={inbox:0,spam:0,reject:0};
+function setSeg(g,v){lab[g]=v;labEl.querySelectorAll('.seg[data-g="'+g+'"] button').forEach(x=>x.classList.toggle("cur",x.dataset.v===v));updHint();}
+labEl.querySelectorAll(".seg").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(b)setSeg(g.dataset.g,b.dataset.v);}));
+function updHint(){
+  const par=lab.esc==="parecido";
+  labEl.querySelector('.seg[data-g="pol"]').classList.toggle("dis",par);
+  document.getElementById("polhint").textContent=par
+    ?"Esta política ya no aplica: el From es otro dominio. Manda la de altoverde-ayuda.example, que controla el atacante."
+    :"Es un registro TXT en _dmarc.altoverde.example. Lo define el dueño del dominio.";
+}
+updHint();
+const wires=[...labEl.querySelectorAll(".wire i")],mx=labEl.querySelector(".node.mx");
+function resetFlow(){wires.forEach(w=>w.className="");mx.classList.remove("busy");labEl.querySelectorAll(".chk span").forEach(c=>c.className="");labEl.querySelectorAll(".bins div").forEach(b=>b.classList.remove("hit"));}
+function fly(w,cls){w.className="";void w.offsetWidth;w.className=cls;}
+function flowChecks(r){mx.classList.add("busy");const v={spf:r.spf,dkim:r.dkim,dmarc:r.dmarc};labEl.querySelectorAll(".chk span").forEach((c,i)=>setTimeout(()=>c.className=v[c.dataset.c],i*220));}
+function flowResult(kind){
+  mx.classList.remove("busy");
+  if(kind==="reject")fly(wires[1],"stop");else fly(wires[1],"go");
+  setTimeout(()=>{counts[kind]++;labEl.querySelectorAll(".bins div").forEach(b=>{b.classList.toggle("hit",b.dataset.b===kind);b.querySelector("em").textContent=counts[b.dataset.b];});},kind==="reject"?300:780);
+}
+function exec(cmd,lines){
+  clearInterval(typing);
+  const all=['<span class="P">~/PRESENTACION $</span> '+esc(cmd)].concat(lines);
+  if(term.innerHTML)term.innerHTML+="\n\n";
+  let k=0,first=true;
+  const step=()=>{
+    while(k<all.length&&typeof all[k]==="function"){all[k]();k++;}
+    if(k<all.length){term.innerHTML+=(first?"":"\n")+all[k];first=false;k++;}
+    term.scrollTop=term.scrollHeight;
+    if(k>=all.length)clearInterval(typing);
+  };
+  if(!speed){while(k<all.length)step();return;}
   step();typing=setInterval(step,speed*4);
 }
+function sendNow(){resetFlow();exec("python3 demo.py enviar "+lab.esc+(lab.esc==="suplantacion"?" --politica "+lab.pol:""),enviar(lab.esc,lab.pol));}
+document.getElementById("send").onclick=sendNow;
+document.getElementById("ana").onclick=()=>exec("python3 demo.py analizar",analizar());
+const SCRIPT=[
+  {t:"From falso, p=none",f:()=>{setSeg("esc","suplantacion");setSeg("pol","none");sendNow();}},
+  {t:"Mismo, p=reject",f:()=>{setSeg("esc","suplantacion");setSeg("pol","reject");sendNow();}},
+  {t:"Dominio parecido",f:()=>{setSeg("esc","parecido");sendNow();}},
+  {t:"Analizar buzón",f:()=>exec("python3 demo.py analizar",analizar())},
+  {t:"Homógrafo",f:()=>exec("python3 demo.py dominio",dominioCmd()),x:true},
+  {t:"Limpiar",f:()=>{clearInterval(typing);term.innerHTML="";buzon=null;resetFlow();for(const k in counts)counts[k]=0;labEl.querySelectorAll(".bins em").forEach(e=>e.textContent="0");},x:true}
+];
+const scr=document.getElementById("script");
+SCRIPT.forEach((r,i)=>{const b=document.createElement("button");b.innerHTML=(r.x?"":"<b>"+(i+1)+"</b>")+r.t;b.onclick=()=>{scr.querySelectorAll("button").forEach(x=>x.classList.toggle("cur",x===b));r.f();};scr.appendChild(b);});
+const sp=labEl.querySelector(".speed");sp.innerHTML='Velocidad <button data-s="60">lenta</button><button data-s="28" class="cur">normal</button><button data-s="0">instantánea</button>';
+sp.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;speed=+b.dataset.s;sp.querySelectorAll("button").forEach(x=>x.classList.toggle("cur",x===b));});
 
 /* =========================================================
    Correo simulado (diapositivas 12 y 13)

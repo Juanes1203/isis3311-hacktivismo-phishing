@@ -169,7 +169,11 @@ class Receptor(socketserver.StreamRequestHandler):
         BUZON.mkdir(exist_ok=True)
         ULTIMO.write_bytes(cabeceras + datos)
         self.server.entregado = True
-        self.decir("250 2.0.0 Entregado al buzon")
+        if resultado["dmarc"] == "fail" and resultado["politica"] == "quarantine":
+            self.server.spam = True
+            self.decir("250 2.0.0 Entregado en cuarentena (spam)")
+        else:
+            self.decir("250 2.0.0 Entregado al buzon")
 
     def handle(self):
         self.decir(f"220 {RECEPTOR} ESMTP laboratorio")
@@ -216,6 +220,7 @@ def enviar(escenario, politica):
     with Servidor((HOST, 0), Receptor) as servidor:
         servidor.dns = crear_dns(politica)
         servidor.entregado = False
+        servidor.spam = False
         servidor.resultado = None
         hilo = threading.Thread(target=servidor.serve_forever, daemon=True)
         hilo.start()
@@ -234,10 +239,13 @@ def enviar(escenario, politica):
             servidor.shutdown()
         resultado = servidor.resultado
         entregado = servidor.entregado
+        spam = servidor.spam
     titulo("Decisión del receptor")
     print(f"  spf={resultado['spf']}  dkim={resultado['dkim']}  dmarc={resultado['dmarc']}  p={resultado['politica']}")
     if entregado:
-        print("  " + amarillo("ENTREGADO") + f": {ULTIMO.relative_to(Path.cwd()) if ULTIMO.is_relative_to(Path.cwd()) else ULTIMO}")
+        ruta = ULTIMO.relative_to(Path.cwd()) if ULTIMO.is_relative_to(Path.cwd()) else ULTIMO
+        estado = amarillo("EN SPAM") + f": {ruta} (llegó, pero en cuarentena)" if spam else amarillo("ENTREGADO") + f": {ruta}"
+        print("  " + estado)
     else:
         print("  " + rojo("RECHAZADO") + ": nunca llegó al buzón")
 
@@ -344,7 +352,7 @@ def main():
     comandos = argumentos.add_subparsers(dest="comando", required=True)
     envio = comandos.add_parser("enviar")
     envio.add_argument("escenario", choices=ESCENARIOS)
-    envio.add_argument("--politica", choices=("none", "reject"), default="none")
+    envio.add_argument("--politica", choices=("none", "quarantine", "reject"), default="none")
     analisis = comandos.add_parser("analizar")
     analisis.add_argument("archivo", nargs="?", type=Path, default=ULTIMO)
     dominio = comandos.add_parser("dominio")
