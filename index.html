@@ -23,7 +23,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#0a0a0a;color:var(--paper);font-family:var(--body);overflow:hidden}
+html,body{height:100%;background:#0a0a0a;color:var(--paper);font-family:var(--body);overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 :focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 
@@ -58,6 +58,15 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
 #progress i{display:block;height:100%;background:var(--yellow);width:0;transition:width .3s}
 #chrome button{padding:4px 8px;border-radius:4px;border:1px solid #333}
 #chrome button:hover{border-color:var(--yellow);color:var(--paper)}
+#chrome .nav{font-size:18px;line-height:1;padding:3px 12px}
+/* pantallas táctiles (iPad, celular): botones grandes y la barra siempre visible */
+@media (hover:none),(pointer:coarse){
+  #viewport{cursor:pointer}
+  #chrome{height:56px;gap:10px;padding:0 max(12px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px,env(safe-area-inset-left));font-size:14px;opacity:1!important}
+  #chrome button{padding:10px 14px;min-height:44px}
+  #chrome .nav{font-size:24px;min-width:64px;background:#1d1d1d;border-color:#555}
+  #notes{bottom:56px}
+}
 #clock.late{color:var(--red)}
 #clock.ok{color:var(--yellow)}
 
@@ -1041,7 +1050,9 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
 <div id="notes" role="region" aria-label="Notas del presentador"></div>
 <div id="overview" role="dialog" aria-label="Vista general"><h3>Vista general · Esc para cerrar</h3><div class="og" id="og"></div></div>
 <div id="chrome">
-  <span id="num">1 / 24</span>
+  <button id="b-prev" class="nav" aria-label="Diapositiva anterior">‹</button>
+  <span id="num">1 / 25</span>
+  <button id="b-next" class="nav" aria-label="Diapositiva siguiente">›</button>
   <div id="progress"><i></i></div>
   <span id="clock" title="Cronómetro (T para iniciar/pausar, R para reiniciar)">00:00</span>
   <button id="b-demo" title="Ir a la demo (D)">Demo</button>
@@ -1125,6 +1136,17 @@ addEventListener("keydown",e=>{
 });
 const labIdx=slides.indexOf(document.getElementById("lab"));
 document.getElementById("b-demo").onclick=()=>go(labIdx);
+document.getElementById("b-prev").onclick=()=>go(cur-1);
+document.getElementById("b-next").onclick=()=>go(cur+1);
+/* deslizar con el dedo: izquierda avanza, derecha retrocede */
+let tx=null,ty=null,tt=0;
+addEventListener("touchstart",e=>{if(e.touches.length!==1){tx=null;return;}tx=e.touches[0].clientX;ty=e.touches[0].clientY;tt=Date.now();},{passive:true});
+addEventListener("touchend",e=>{
+  if(tx===null)return;
+  const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;tx=null;
+  if(e.target.closest&&e.target.closest("input,textarea,#overview,#notes"))return;
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-tt<800){go(dx<0?cur+1:cur-1);}
+},{passive:true});
 document.getElementById("b-notes").onclick=()=>notes.classList.toggle("open");
 document.getElementById("b-grid").onclick=()=>ov.classList.toggle("open");
 document.getElementById("b-full").onclick=full;

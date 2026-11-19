@@ -12,6 +12,7 @@ David Elías Forero Cobos y Juan Esteban Jiménez Benavides
 | Tecla | Acción |
 |---|---|
 | → / Espacio | Siguiente diapositiva |
+| iPad / celular | Desliza el dedo a la izquierda o derecha, toca los bordes o usa los botones ‹ › de abajo |
 | ← | Anterior |
 | N | Notas del presentador (quién habla, tiempos, puntos de control) |
 | G | Índice, incluido el anexo de preguntas |
