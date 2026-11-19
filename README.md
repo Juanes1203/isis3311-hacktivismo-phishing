@@ -29,6 +29,37 @@ David Elías Forero Cobos y Juan Esteban Jiménez Benavides
 
 Los botones del **Guion** (1 a 4) hacen la secuencia completa de la exposición con un clic cada uno.
 
+## Glosario rápido
+
+| Término | Qué es |
+|---|---|
+| **SMTP** | Protocolo con el que los servidores se entregan el correo. No autentica al remitente. |
+| **From** | Remitente visible. Lo escribe quien envía. |
+| **Return-Path / MAIL FROM** | El "sobre": dirección técnica para entregar y rebotar. Es lo que revisa SPF. |
+| **Reply-To** | A dónde van las respuestas. Puede ser otro dominio. |
+| **SPF** | Lista de servidores que un dominio autoriza para enviar su correo. |
+| **DKIM** | Firma digital que el dominio pone en cada mensaje. |
+| **DMARC** | Exige que SPF o DKIM pasen con el mismo dominio del From (alineación). |
+| **p=none / quarantine / reject** | Qué pide el dueño del dominio si DMARC falla: observar, mandar a spam o rechazar. |
+| **250 / 550** | Códigos SMTP: 250 aceptado, 550 rechazado. |
+| **Dominio registrado** | El que va justo antes de la primera `/`. Lo de la izquierda es subdominio. |
+| **Homógrafo / xn--** | Letra de otro alfabeto que se ve igual. DNS la escribe en punycode (`xn--`). |
+| **AiTM** | Proxy falso entre la víctima y el sitio real que copia la sesión, incluso con MFA por código. |
+| **MFA / FIDO2 / passkeys** | Segundo factor. FIDO2 y passkeys solo funcionan en el dominio real. |
+| **MITRE ATT&CK (T1566…)** | Catálogo público de técnicas de ataque con códigos. |
+| **.example / 127.0.0.1** | Dominios reservados para ejemplos y la dirección de este mismo computador. |
+
+### Cómo leer el resultado de la demo
+
+| Resultado | Qué significa en el escenario |
+|---|---|
+| `spf=pass` | El servidor que envió está autorizado, pero por correo-masivo.example, no por Alto Verde. |
+| `dkim=none` | Nadie firmó el mensaje. |
+| `dmarc=fail` | Ni SPF ni DKIM coinciden con el dominio del From (altoverde.example): el From es falso. |
+| `p=none` | Alto Verde solo pide observar, así que el correo llega igual. Con `p=reject` sale `550` y no llega. |
+
+La diapositiva 24 (anexo) tiene este glosario dentro de la presentación.
+
 ## Todo es ficticio
 
 Universidad Alto Verde y Colectivo Aguacero son inventados. Los dominios `.example` están reservados (RFC 2606) y las IP son de documentación (RFC 5737). Ningún correo sale del computador y no se captura ninguna credencial.

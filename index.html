@@ -209,14 +209,14 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
 .sig .k{font-family:var(--mono);font-size:13px;color:var(--yellow);margin-top:4px;display:block;opacity:1}
 
 /* cabeceras */
-.hdrbox{background:#0c0c0c;border:1px solid #2c2c2c;border-radius:8px;padding:26px 28px;font-family:var(--mono);font-size:21px;line-height:1.75;white-space:pre-wrap}
+.hdrbox{background:#0c0c0c;border:1px solid #2c2c2c;border-radius:8px;padding:20px 26px;font-family:var(--mono);font-size:20px;line-height:1.65;white-space:pre-wrap}
 .hdrbox mark{background:var(--yellow);color:var(--ink);padding:0 4px;border-radius:2px}
 .hdrbox mark.r{background:var(--red);color:#fff}
 .hdrbox .hk{color:#8c877c}
 .hdrbox [data-k]{cursor:pointer;border-radius:3px;transition:outline .15s}
 .hdrbox [data-k].focus{outline:2px solid var(--yellow);outline-offset:3px}
-.explain{display:flex;flex-direction:column;gap:22px}
-.explain .e{padding:16px 20px;border-left:4px solid #3a3a3a;cursor:pointer}
+.explain{display:flex;flex-direction:column;gap:12px}
+.explain .e{padding:10px 18px;border-left:4px solid #3a3a3a;cursor:pointer}
 .explain .e.focus{border-color:var(--yellow);background:#1a1a1a}
 .explain .e b{font-family:var(--mono);color:var(--yellow);font-size:24px;display:block;margin-bottom:6px}
 .explain .e span{font-size:19px;line-height:1.4;opacity:.9}
@@ -347,6 +347,22 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
 .refs{font-family:var(--mono);font-size:20px;line-height:2;margin-top:10px}
 .refs .new{background:var(--yellow);color:var(--ink);padding:0 6px}
 
+/* definiciones cortas */
+.gloss{position:absolute;left:88px;right:88px;bottom:46px;display:flex;flex-wrap:wrap;gap:10px 30px;font-family:var(--mono);font-size:16px;line-height:1.4}
+.gloss span{opacity:.85}
+.gloss b{font-weight:600;background:var(--yellow);color:var(--ink);padding:0 6px;margin-right:8px}
+.def{display:block;font-style:normal;font-family:var(--mono);font-size:15px;line-height:1.35;color:#c9c3b6;margin:2px 0 4px}
+.levers .r .def{color:#5e5a52;font-size:16px}
+.paper .def,.yellow .def{color:#5e5a52}
+.hdrlegend{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:16px;font-size:16px;line-height:1.35}
+.hdrlegend b{font-family:var(--mono);color:var(--yellow);font-weight:600;margin-right:6px}
+.flowkey{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:var(--mono);font-size:13px;color:#b9b4a8;margin-top:-6px;flex:none}
+.flowkey b{color:var(--yellow);font-weight:600;margin-right:4px}
+.glossary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 40px;margin-top:22px}
+.glossary div{border-top:2px solid currentColor;padding-top:8px}
+.glossary b{font-family:var(--mono);font-size:20px;display:block}
+.glossary span{font-size:17px;line-height:1.4;opacity:.85}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -444,8 +460,8 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
       <p class="small" style="max-width:30ch;margin-bottom:10px">El CEO dijo tener identificados a líderes de Anonymous. La respuesta escaló de una web a los buzones.</p>
     </div>
     <div class="steps5">
-      <div class="s" style="min-height:200px"><div class="n">1</div><b>Web</b><span>Inyección SQL en el CMS del sitio.</span></div>
-      <div class="s" style="min-height:240px"><div class="n">2</div><b>Claves</b><span>Hashes débiles descifrados.</span></div>
+      <div class="s" style="min-height:200px"><div class="n">1</div><b>Web</b><span>Inyección SQL: colaron órdenes a la base de datos del gestor del sitio (CMS).</span></div>
+      <div class="s" style="min-height:240px"><div class="n">2</div><b>Claves</b><span>Las claves se guardaban como hash (huella irreversible), pero eran débiles y se adivinaron.</span></div>
       <div class="s" style="min-height:280px"><div class="n">3</div><b>Buzones</b><span>La misma clave abría el correo de los directivos.</span></div>
       <div class="s key" style="min-height:330px"><div class="n">4</div><b>Ingeniería social</b><span>Desde el buzón de Greg Hoglund piden la clave de rootkit.com. El administrador la envía.</span></div>
       <div class="s" style="min-height:370px"><div class="n">5</div><b>Exponer</b><span>Publican decenas de miles de correos. El CEO renuncia semanas después.</span></div>
@@ -471,7 +487,7 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
   </div>
   <div class="statfoot">
     <p>La entrada n.º 1 ya es técnica: explotar fallas, 31 %.<br>Pero la persona sigue presente en la mayoría de los casos.</p>
-    <span class="mono muted" style="font-size:18px">Verizon DBIR 2026</span>
+    <span class="mono muted" style="font-size:18px;text-align:right">Verizon DBIR 2026<br>informe anual de brechas</span>
   </div>
   <script type="text/notes">
   - Dato de la DBIR 2026 de Verizon.
@@ -497,6 +513,9 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
       <div class="c"><div class="arrow">Entrar</div><div class="id">T1078</div><p>Ya usa una cuenta válida.</p></div>
     </div>
   </div>
+  <div class="gloss">
+    <span><b>T1589, T1566…</b>Códigos de MITRE ATT&amp;CK, el catálogo público de técnicas de ataque.</span>
+  </div>
   <script type="text/notes">
   - Ingeniería social: manipular para que la persona haga algo contra su seguridad. Phishing es una de sus formas.
   - La cadena viene con identificadores de MITRE ATT&CK, el marco del curso.
@@ -516,7 +535,7 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
       <div class="w">Confianza</div><div class="q">"Somos su equipo de TI."</div>
     </div>
     <div class="r">
-      <div class="eyebrow" style="margin:0">En el protocolo</div>
+      <div class="eyebrow" style="margin:0">En el protocolo<span class="def" style="margin-top:8px">SMTP: el protocolo con el que los servidores se entregan el correo. Es de 1982 y no autentica al remitente.</span></div>
       <div><b>SMTP no verifica el remitente visible.</b><span>El From lo escribe quien envía.</span></div>
       <div><b>El texto de un enlace no es su destino.</b><span>Lo que se lee y a donde va son datos distintos.</span></div>
       <div><b>Un dominio parecido es un dominio válido.</b><span>Registrarlo cuesta poco.</span></div>
@@ -546,7 +565,7 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
         <div class="k"><b>Whaling</b><span>Directivos y altos cargos.</span></div>
       </div>
       <div style="border-left:2px solid var(--ink);padding-left:40px">
-        <h5>Según el medio</h5>
+        <h5>Según el medio · código MITRE ATT&amp;CK</h5>
         <div class="m">Adjunto<small>T1566.001</small></div>
         <div class="m">Enlace<small>T1566.002</small></div>
         <div class="m">Servicio o chat<small>T1566.003</small></div>
@@ -599,8 +618,8 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
         <div class="eyebrow" style="color:var(--yellow);opacity:1">Controles del laboratorio</div>
         <ul class="checks">
           <li>Organización inventada</li>
-          <li>Dominios .example, reservados (RFC 2606)</li>
-          <li>Ningún envío real: solo 127.0.0.1</li>
+          <li>Dominios .example: reservados para ejemplos (RFC 2606), no existen</li>
+          <li>Ningún envío real: solo 127.0.0.1 (este mismo computador)</li>
           <li>Ninguna credencial capturada</li>
         </ul>
       </div>
@@ -666,10 +685,10 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
 <!-- 14 -->
 <section class="slide" data-title="Demo 3 · Cabeceras" data-who="David" data-sec="60">
   <div class="pad" style="padding-top:56px">
-    <div class="eyebrow">Demo 3 de 5 · Cabeceras del mensaje</div>
-    <h2 style="font-size:84px">El From dice una cosa.<br>El sobre, otra.</h2>
+    <div class="eyebrow" style="margin-bottom:18px">Demo 3 de 5 · Cabeceras del mensaje</div>
+    <h2 style="font-size:68px">El From dice una cosa.<br>El sobre, otra.</h2>
     <div style="display:grid;grid-template-columns:1fr 440px;gap:40px;margin-top:30px">
-<div class="hdrbox" id="hdrbox"><span class="hk">Received:</span> from relay.correo-masivo.example
+<div><div class="hdrbox" id="hdrbox"><span class="hk">Received:</span> from relay.correo-masivo.example
     ([198.51.100.23])
 <span class="hk">Return-Path:</span> &lt;rebote@<mark data-k="spf">correo-masivo.example</mark>&gt;
 <span class="hk">From:</span> "Mesa de Servicios TI" &lt;soporte@<mark data-k="dmarc">altoverde.example</mark>&gt;
@@ -678,11 +697,17 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
   <mark data-k="spf">spf=pass</mark> smtp.mailfrom=correo-masivo.example;
   <mark data-k="dkim">dkim=none</mark>;
   <mark class="r" data-k="dmarc">dmarc=fail</mark> (<mark data-k="p">p=none</mark>) header.from=altoverde.example</div>
+<div class="hdrlegend">
+  <div><b>Received</b>Servidor por el que pasó el correo, con su IP.</div>
+  <div><b>Return-Path</b>El "sobre": dirección técnica que usa SMTP y que revisa SPF.</div>
+  <div><b>From</b>El remitente que ve la persona. Lo escribe quien envía.</div>
+  <div><b>Reply-To</b>A dónde irían las respuestas.</div>
+</div></div>
       <div class="explain" id="explain">
-        <div class="e" data-k="spf"><b>spf=pass</b><span>Solo avala a correo-masivo, no a Alto Verde.</span></div>
-        <div class="e" data-k="dkim"><b>dkim=none</b><span>Nadie firmó el mensaje.</span></div>
-        <div class="e" data-k="dmarc"><b>dmarc=fail</b><span>El From no se alinea con SPF ni con DKIM.</span></div>
-        <div class="e" data-k="p"><b>p=none</b><span>La política solo observa. Por eso llegó.</span></div>
+        <div class="e" data-k="spf"><b>spf=pass</b><i class="def">SPF: lista de servidores que un dominio autoriza para enviar su correo.</i><span>Pasa, pero solo avala a correo-masivo, no a Alto Verde.</span></div>
+        <div class="e" data-k="dkim"><b>dkim=none</b><i class="def">DKIM: firma digital que el dominio pone en cada mensaje.</i><span>Nadie firmó este mensaje.</span></div>
+        <div class="e" data-k="dmarc"><b>dmarc=fail</b><i class="def">DMARC: exige que SPF o DKIM pasen con el mismo dominio del From.</i><span>Ninguno coincide con altoverde.example.</span></div>
+        <div class="e" data-k="p"><b>p=none</b><i class="def">p: qué pide el dueño del dominio si DMARC falla: none, quarantine o reject.</i><span>none = solo observar. Por eso llegó.</span></div>
       </div>
     </div>
   </div>
@@ -729,11 +754,17 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
       </div>
       <div class="rightcol">
         <div class="flow" id="flow">
-          <div class="node atk"><small>Atacante</small><b>relay.correo-masivo.example</b><span class="ip">198.51.100.23</span></div>
+          <div class="node atk"><small>Atacante</small><b>relay.correo-masivo.example</b><span class="ip">198.51.100.23 · IP de ejemplo</span></div>
           <div class="wire"><i>✉</i></div>
           <div class="node mx"><small>Receptor de Alto Verde</small><b>mx.altoverde.example</b><div class="chk"><span data-c="spf">SPF</span><span data-c="dkim">DKIM</span><span data-c="dmarc">DMARC</span></div></div>
           <div class="wire"><i>✉</i></div>
           <div class="bins"><div data-b="inbox">Bandeja <em>0</em></div><div data-b="spam">Spam <em>0</em></div><div data-b="reject">Rechazado <em>0</em></div></div>
+        </div>
+        <div class="flowkey">
+          <span><b>SPF</b>¿la IP está autorizada por el dominio del sobre?</span>
+          <span><b>DKIM</b>¿el mensaje trae firma?</span>
+          <span><b>DMARC</b>¿SPF o DKIM coinciden con el From?</span>
+          <span><b>250</b>aceptado · <b>550</b>rechazado</span>
         </div>
         <div class="term" aria-live="polite">
           <div class="bar"><i></i><i></i><i></i><span style="margin-left:10px">laboratorio · 127.0.0.1 · equivalente a demo.py</span></div>
@@ -760,7 +791,7 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
   <div class="pad" style="background:var(--paper);color:var(--ink);height:380px;bottom:auto">
     <div class="eyebrow">Demo 4 de 5 · Resumen</div>
     <h2 style="font-size:100px">Cambiemos una pieza</h2>
-    <p class="small" style="margin-top:14px">Receptor SMTP local. DNS simulado y sin firma DKIM: es un modelo simplificado.</p>
+    <p class="small" style="margin-top:14px">Receptor SMTP local. DNS simulado y sin firma DKIM: es un modelo simplificado.<br><b>dmarc=fail</b>: el From no está autenticado · <b>550 5.7.1</b>: código con el que el servidor rechaza · <b>dmarc=pass</b>: autenticado, pero por el dominio del atacante.</p>
   </div>
   <div class="res3">
     <div class="a"><div class="lab3">From falso, p=none</div><div class="w">Entregado</div><div class="code">dmarc=fail</div><p>La política solo observa.</p></div>
@@ -796,7 +827,7 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
   <div class="homo">
     <div class="mono" style="font-size:17px;color:var(--yellow)">Otra trampa: letras de otro alfabeto</div>
     <div class="big2"><span id="homo-a">аltoverde.example</span><span class="ar">→</span><span id="homo-b"></span></div>
-    <div class="mono" style="font-size:17px;opacity:.7">La primera "a" es cirílica (U+0430). Se ve igual; en DNS es otro dominio.</div>
+    <div class="mono" style="font-size:17px;opacity:.7">La primera "a" es cirílica (U+0430, su código Unicode). Se ve igual; en DNS es otro dominio. La forma xn-- (punycode) es como DNS escribe letras no latinas.</div>
   </div>
   <script type="text/notes">
   - <b>Ahora habla Juan Esteban</b> (así los dos muestran parte técnica).
@@ -878,6 +909,12 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
       <div><h5>Después del clic</h5><ul><li>Botón de reportar</li><li>Revocar sesiones</li><li>Alertar reglas de reenvío</li></ul><p class="note">Reduce el tiempo de exposición.</p><div class="ref">ISO 6.8</div></div>
     </div>
   </div>
+  <div class="gloss">
+    <span><b>MFA</b>Un segundo paso además de la clave.</span>
+    <span><b>FIDO2 / passkeys</b>Llave criptográfica que solo responde al dominio real.</span>
+    <span><b>AiTM</b>Sitio falso en medio que copia la sesión.</span>
+    <span><b>CIS · ISO 27002</b>Catálogos de controles de seguridad.</span>
+  </div>
   <script type="text/notes">
   - Ninguna capa alcanza sola; se asume que alguna va a fallar.
   - Antes: DMARC en p=reject cierra la suplantación exacta del dominio.
@@ -949,7 +986,35 @@ h1 .hl,h2 .hl,.w .hl{display:inline-block;line-height:1;padding:.04em .12em 0}
   </script>
 </section>
 
-<!-- 24 -->
+<!-- 24 glosario -->
+<section class="slide paper" data-title="Anexo · Glosario" data-who="Anexo" data-sec="0">
+  <div class="pad" style="padding-top:60px">
+    <div class="eyebrow">Anexo · Glosario</div>
+    <h2 style="font-size:84px">Qué significa cada término</h2>
+    <div class="glossary">
+      <div><b>SMTP</b><span>Protocolo con el que los servidores se entregan el correo. No autentica al remitente.</span></div>
+      <div><b>From</b><span>Remitente visible. Lo escribe quien envía.</span></div>
+      <div><b>Return-Path / MAIL FROM</b><span>El "sobre": dirección técnica para entregar y rebotar.</span></div>
+      <div><b>Reply-To</b><span>A dónde van las respuestas. Puede ser otro dominio.</span></div>
+      <div><b>SPF</b><span>Lista de servidores que un dominio autoriza. Revisa el sobre, no el From.</span></div>
+      <div><b>DKIM</b><span>Firma digital del dominio que envía el mensaje.</span></div>
+      <div><b>DMARC</b><span>Pide que SPF o DKIM pasen con el mismo dominio del From (alineación).</span></div>
+      <div><b>p=none · quarantine · reject</b><span>Qué hacer si DMARC falla: observar, mandar a spam o rechazar.</span></div>
+      <div><b>250 · 550</b><span>Códigos SMTP: 250 aceptado, 550 rechazado.</span></div>
+      <div><b>Dominio registrado</b><span>El que va justo antes de la primera "/". Lo de la izquierda es subdominio.</span></div>
+      <div><b>Homógrafo · xn--</b><span>Letra de otro alfabeto que se ve igual. DNS la escribe en punycode (xn--).</span></div>
+      <div><b>AiTM</b><span>Proxy falso entre la víctima y el sitio real que copia la sesión.</span></div>
+      <div><b>MFA · FIDO2 · passkeys</b><span>Segundo factor. FIDO2 y passkeys solo funcionan en el dominio real.</span></div>
+      <div><b>MITRE ATT&amp;CK (T1566…)</b><span>Catálogo público de técnicas de ataque con códigos.</span></div>
+      <div><b>.example · 127.0.0.1</b><span>Dominios reservados para ejemplos y la dirección de este mismo computador.</span></div>
+    </div>
+  </div>
+  <script type="text/notes">
+  - No presentar. Respaldo si alguien pregunta qué significa un término.
+  </script>
+</section>
+
+<!-- 25 -->
 <section class="slide" data-title="Anexo · Fuentes" data-who="Anexo" data-sec="0">
   <div class="pad">
     <div class="eyebrow">Fuentes</div>
@@ -1228,7 +1293,7 @@ document.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>{votes=Math.ma
 
 const SIGS=[
   {n:1,b:"Autoridad",s:"Se presenta como la mesa de TI. El nombre visible lo escribe quien envía.",k:"Persona"},
-  {n:2,b:"Respuestas a otro dominio",s:"Solo se ve en los detalles: Reply-To apunta a altoverde-ayuda.example.",k:"Cabecera"},
+  {n:2,b:"Respuestas a otro dominio",s:"Solo se ve en los detalles: Reply-To (a dónde van las respuestas) apunta a altoverde-ayuda.example.",k:"Cabecera"},
   {n:3,b:"Urgencia",s:"\"URGENTE\" y \"hoy\" en el asunto, para actuar antes de pensar.",k:"Persona"},
   {n:4,b:"Miedo y saludo genérico",s:"Amenaza con perder el correo en 2 horas. \"Estimado usuario\" en vez del nombre.",k:"Persona"},
   {n:5,b:"El enlace",s:"El texto parece de Alto Verde. Pasa el cursor: el destino es otro.",k:"Enlace"}
